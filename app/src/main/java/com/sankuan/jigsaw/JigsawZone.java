@@ -109,21 +109,15 @@ public class JigsawZone extends ViewGroup {
 //            b.setMoveFinishedListener(new MobileBlock.MoveFinishedListener() {
 //                @Override
 //                public void onMoveFinished(int currOrderId, int moveOrderId) {
-//                    // 移动完成后,更新当前位置
-//                    b.setCurrOrderId(moveOrderId);
-////                    // 缓存目标位置原来的【块】
-////                    MobileBlock tempBlock = mBlocks[moveOrderId];
-////                    // 把【当前块】放入【目标块位置】
-////                    mBlocks[moveOrderId] = b;
+//                    // 重新确定Block[]位置
+//                    try {
+//                        updateBlockArray();
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
 //
-////                    // 调换位置
-////                    mBlocks[currOrderId] = tempBlock;
-////                    mBlocks[currOrderId].setCurrOrderId(currOrderId);
-////                    // 更新方向
-////                    updateDirection(currOrderId);
-////                    // 【缺口对象】确定，去修改位置
-////                    mBlocks[currOrderId].moveNull(b.direction);
-//                    // FIXME: 6/18/21
+////                    // 触发UI刷新
+//                    requestLayout();
 //                }
 //            });
             b.setOnClickListener(new OnClickListener() {
