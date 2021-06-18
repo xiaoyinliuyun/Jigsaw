@@ -15,8 +15,15 @@ import android.widget.Toast;
 /**
  * @Author yangkunjian.
  * @Date 2019/7/5 20:41.
- * @Desc
+ * @Dese
  */
+
+// TODO: 6/18/21
+//  (1) 触摸滑动
+//  (2) 触摸抬起动画
+//  (3) 选择图片加载到魔板
+//  (4) 自动打乱和重置
+//  (5) 其他优化和发布1.0
 
 public class JigsawZone extends ViewGroup {
     private static final String TAG = "JigsawZone";
