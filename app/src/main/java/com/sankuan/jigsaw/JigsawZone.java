@@ -361,6 +361,15 @@ public class JigsawZone extends ViewGroup {
                 block.setDirection(MobileBlock.DIRECTION_FIX);
                 Log.i(TAG, "block : " + currOrderId + " -> direction : 固定");
             }
+        } else if (currOrderId == WIDTH_SIZE * HEIGHT_SIZE) {
+            if (nullIndex >= WIDTH_SIZE * (HEIGHT_SIZE - 1)) {
+                block.setDirection(MobileBlock.DIRECTION_LEFT);
+                Log.i(TAG, "block : " + currOrderId + " -> direction : 左");
+            } else {
+                // 【缺口】和指定块 不在一条线上
+                block.setDirection(MobileBlock.DIRECTION_FIX);
+                Log.i(TAG, "block : " + currOrderId + " -> direction : 固定");
+            }
         } else if (nullIndex > currOrderId && (currOrderId - nullIndex) % WIDTH_SIZE == 0) {
             // 【缺口】在指定块的正下方
             block.setDirection(MobileBlock.DIRECTION_DOWN);
@@ -381,9 +390,6 @@ public class JigsawZone extends ViewGroup {
             block.setDirection(MobileBlock.DIRECTION_RIGHT);
             Log.i(TAG, "block : " + currOrderId + " -> direction : 右");
 
-        } else if (currOrderId == WIDTH_SIZE * HEIGHT_SIZE) {
-            block.setDirection(MobileBlock.DIRECTION_LEFT);
-            Log.i(TAG, "block : " + currOrderId + " -> direction : 左");
         } else {
             // 【缺口】和指定块 不在一条线上
             block.setDirection(MobileBlock.DIRECTION_FIX);

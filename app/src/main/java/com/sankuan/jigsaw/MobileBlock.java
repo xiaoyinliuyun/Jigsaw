@@ -289,6 +289,45 @@ public class MobileBlock extends View {
 //        return super.onTouchEvent(event);
 //    }
 
+//    /**
+//     * 触发自动移动
+//     */
+//    public void move() {
+//        switch (direction) {
+//            case DIRECTION_LEFT:
+//                // 4-4 向左移动
+//                setLeft(locationLeft - UNIT_MOVE);
+//                setRight(locationRight - UNIT_MOVE);
+//                // 当前位置减小
+//                mCurrOrderId -= 1;
+//                break;
+//            case DIRECTION_RIGHT:
+//                // 4-3 向右移动
+//                setLeft(locationLeft + UNIT_MOVE);
+//                setRight(locationRight + UNIT_MOVE);
+//                // 当前位置增加
+//                mCurrOrderId += 1;
+//                break;
+//            case DIRECTION_DOWN:
+//                // 确定当前范围  4-1:向下移动
+//                setTop(locationTop + UNIT_MOVE);
+//                setBottom(locationBottom + UNIT_MOVE);
+//                // 当前位置增加
+//                mCurrOrderId += JigsawZone.WIDTH_SIZE;
+//                break;
+//            case DIRECTION_UP:
+//                // 确定当前范围  4-2:向上移动
+//                setTop(locationTop - UNIT_MOVE);
+//                setBottom(locationBottom - UNIT_MOVE);
+//                // 当前位置减小
+//                mCurrOrderId -= JigsawZone.WIDTH_SIZE;
+//                break;
+//            case DIRECTION_FIX:
+//                break;
+//        }
+//
+//    }
+
     /**
      * 触发自动移动
      */
@@ -296,29 +335,29 @@ public class MobileBlock extends View {
         switch (direction) {
             case DIRECTION_LEFT:
                 // 4-4 向左移动
-                setLeft(locationLeft - UNIT_MOVE);
-                setRight(locationRight - UNIT_MOVE);
+                setLeft(getLeft() - UNIT_MOVE);
+                setRight(getRight() - UNIT_MOVE);
                 // 当前位置减小
                 mCurrOrderId -= 1;
                 break;
             case DIRECTION_RIGHT:
                 // 4-3 向右移动
-                setLeft(locationLeft + UNIT_MOVE);
-                setRight(locationRight + UNIT_MOVE);
+                setLeft(getLeft() + UNIT_MOVE);
+                setRight(getRight() + UNIT_MOVE);
                 // 当前位置增加
                 mCurrOrderId += 1;
                 break;
             case DIRECTION_DOWN:
                 // 确定当前范围  4-1:向下移动
-                setTop(locationTop + UNIT_MOVE);
-                setBottom(locationBottom + UNIT_MOVE);
+                setTop(getTop() + UNIT_MOVE);
+                setBottom(getBottom() + UNIT_MOVE);
                 // 当前位置增加
                 mCurrOrderId += JigsawZone.WIDTH_SIZE;
                 break;
             case DIRECTION_UP:
                 // 确定当前范围  4-2:向上移动
-                setTop(locationTop - UNIT_MOVE);
-                setBottom(locationBottom - UNIT_MOVE);
+                setTop(getTop() - UNIT_MOVE);
+                setBottom(getBottom() - UNIT_MOVE);
                 // 当前位置减小
                 mCurrOrderId -= JigsawZone.WIDTH_SIZE;
                 break;
