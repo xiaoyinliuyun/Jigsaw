@@ -29,7 +29,7 @@ public class JigsawZone extends ViewGroup {
     private static final String TAG = "JigsawZone";
 
     public static final int WIDTH_SIZE = 12;
-    public static final int HEIGHT_SIZE = 6;
+    public static final int HEIGHT_SIZE = 7;
     public static final int UNIT_SIDE = 50;
 
     /**
