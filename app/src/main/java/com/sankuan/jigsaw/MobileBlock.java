@@ -8,6 +8,7 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.view.View;
 
 /**
@@ -28,6 +29,8 @@ public class MobileBlock extends View {
     protected final static int DIRECTION_DOWN = 0x12;
     protected final static int DIRECTION_UP = 0x13;
     protected final static int DIRECTION_FIX = 0x14;
+
+    private VelocityTracker velocityTracker;
 
     /**
      * 初始位置/最终判定正确位置
@@ -176,8 +179,17 @@ public class MobileBlock extends View {
                 mDownEventX = event.getRawX();
                 mDownEventY = event.getRawY();
                 Log.i(TAG, "onTouchEvent: ACTION_DOWN -> " + mDownEventX + ", " + mDownEventY);
+                if(velocityTracker == null){
+                    velocityTracker = VelocityTracker.obtain();
+                }else{
+                    velocityTracker.clear();
+                }
+                velocityTracker.addMovement(event);
                 break;
             case MotionEvent.ACTION_MOVE:
+                velocityTracker.addMovement(event);
+                velocityTracker.computeCurrentVelocity(1000);
+
                 // 移动的时候，需要随时修改块预期的位置
 
                 // 1. 计算手指位移量
@@ -190,6 +202,10 @@ public class MobileBlock extends View {
 
                 // 如果
                 if(direction == DIRECTION_UP) {
+                    // y方向上的速度 如果小于临界值，则revert 为 true; 否则看其他条件
+                    float yVelocity = velocityTracker.getYVelocity();
+                    Log.i(TAG, "yVelocity: " + yVelocity);
+
                     // 上移 范围： -UNIT_MOVE < moveY < 0
                     float fMoveY = mMoveEventY - mDownEventY;
                     if(fMoveY > 0){
@@ -200,8 +216,15 @@ public class MobileBlock extends View {
 
                     moveY = -Math.min(Math.abs(fMoveY), UNIT_MOVE);
 
-                    revert = Math.abs(moveY) < (UNIT_MOVE / 2.0) && Math.abs(moveY) > 5;
+                    revert =  Math.abs(moveY) < (UNIT_MOVE / 2.0) && Math.abs(moveY) > 5;
+                    if(revert && yVelocity < -100){
+                        revert = false;
+                    }
                 } else if(direction == DIRECTION_DOWN){
+                    // y方向上的速度 如果大约临界值，则revert 为 true; 否则看其他条件
+                    float yVelocity = velocityTracker.getYVelocity();
+                    Log.i(TAG, "yVelocity: " + yVelocity);
+
                     // 下移 范围 UNIT_MOVE > moveY > 0
                     float fMoveY = mMoveEventY - mDownEventY;
                     if(fMoveY < 0){
@@ -213,7 +236,14 @@ public class MobileBlock extends View {
                     moveY = Math.min(Math.abs(fMoveY), UNIT_MOVE);
 
                     revert = Math.abs(moveY) < (UNIT_MOVE / 2.0) && Math.abs(moveY) > 5;
+                    if(revert && yVelocity > 100){
+                        revert = false;
+                    }
                 } else if(direction == DIRECTION_LEFT){
+                    // x方向上的速度 如果大约临界值，则revert 为 true; 否则看其他条件
+                    float xVelocity = velocityTracker.getXVelocity();
+                    Log.i(TAG, "xVelocity: " + xVelocity);
+
                     // 左移  范围 -UNIT_MOVE < moveX < 0
                     float fMoveX = mMoveEventX - mDownEventX;
                     Log.i(TAG, "x -> " + mMoveEventX + " , fMoveX: " + fMoveX);
@@ -223,7 +253,14 @@ public class MobileBlock extends View {
                     moveX = -Math.min(Math.abs(fMoveX), UNIT_MOVE);
 
                     revert = Math.abs(moveX) < (UNIT_MOVE / 2.0) && Math.abs(moveX) > 5;
+                    if(revert && xVelocity < -100){
+                        revert = false;
+                    }
                 } else if(direction == DIRECTION_RIGHT){
+                    // x方向上的速度 如果大约临界值，则revert 为 true; 否则看其他条件
+                    float xVelocity = velocityTracker.getXVelocity();
+                    Log.i(TAG, "xVelocity: " + xVelocity);
+
                     // 右移 范围 UNIT_MOVE > moveX > 0
                     float fMoveX = mMoveEventX - mDownEventX;
                     Log.i(TAG, "x -> " + mMoveEventX + " , fMoveX: " + fMoveX);
@@ -233,6 +270,9 @@ public class MobileBlock extends View {
                     moveX = Math.min(fMoveX, UNIT_MOVE);
 
                     revert = Math.abs(moveX) < (UNIT_MOVE / 2.0) && Math.abs(moveX) > 5;
+                    if(revert && xVelocity > 100){
+                        revert = false;
+                    }
                 }
 
                 // 2. 计算滑块位移后的位置【位移小于等于UNIT_MOVE】  联动其他相关块，其他块随当前块运动，
