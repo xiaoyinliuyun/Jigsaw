@@ -116,19 +116,11 @@ public class JigsawZone extends ViewGroup {
                 }
 
                 @Override
-                public void onMoveFinished(int currOrderId, int moveOrderId) {
+                public void onMoveFinished() {
                     // 触发联动的移动
                     moveLinkedBlocks(b);
                 }
             });
-//            b.setOnClickListener(new OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    Log.i(TAG, "onClick: " + b.direction);
-//                    // 触发联动的移动
-//                    moveLinkedBlocks(b);
-//                }
-//            });
 
             this.addView(b);
         }

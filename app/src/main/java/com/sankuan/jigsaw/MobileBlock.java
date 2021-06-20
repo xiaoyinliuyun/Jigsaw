@@ -17,6 +17,8 @@ import android.view.View;
  * @Desc 为什么使用getX() getY() 时不顺滑，使用getRawX() getRawY()时很顺滑，获得的信息差别是什么？RawX RawY 是相对与屏幕的位置，X,Y是什么位置呢？
  * getRawX()：表示触摸点相对于屏幕的坐标
  * getX()：表示触摸点相对于本身控件最左边和最上边的距离
+ *
+ * 如何区分点击事件，和触摸事件？
  */
 
 public class MobileBlock extends View {
@@ -64,9 +66,9 @@ public class MobileBlock extends View {
     private float mMoveEventX, mMoveEventY;
 
     /**
-     * 是否还原
+     * 是否变化
      */
-    private boolean revert;
+    private boolean forward;
 
     /**
      * 初始化位置，位置变化后更新
@@ -82,7 +84,6 @@ public class MobileBlock extends View {
     public int direction;
 
     private MoveFinishedListener moveFinishedListener;
-    private int mWidthSize = JigsawZone.WIDTH_SIZE;
 
 
     public int getInitOrderId() {
@@ -174,7 +175,7 @@ public class MobileBlock extends View {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
                 // 默认点击不revert
-                revert = false;
+                forward = true;
                 // 记录按下的位置点
                 mDownEventX = event.getRawX();
                 mDownEventY = event.getRawY();
@@ -216,9 +217,9 @@ public class MobileBlock extends View {
 
                     moveY = -Math.min(Math.abs(fMoveY), UNIT_MOVE);
 
-                    revert =  Math.abs(moveY) < (UNIT_MOVE / 2.0) && Math.abs(moveY) > 5;
-                    if(revert && yVelocity < -100){
-                        revert = false;
+                    forward =  Math.abs(moveY) > (UNIT_MOVE / 2.0);
+                    if(!forward && yVelocity < -100){
+                        forward = true;
                     }
                 } else if(direction == DIRECTION_DOWN){
                     // y方向上的速度 如果大约临界值，则revert 为 true; 否则看其他条件
@@ -235,9 +236,9 @@ public class MobileBlock extends View {
 
                     moveY = Math.min(Math.abs(fMoveY), UNIT_MOVE);
 
-                    revert = Math.abs(moveY) < (UNIT_MOVE / 2.0) && Math.abs(moveY) > 5;
-                    if(revert && yVelocity > 100){
-                        revert = false;
+                    forward = Math.abs(moveY) > (UNIT_MOVE / 2.0);
+                    if(!forward && yVelocity > 100){
+                        forward = true;
                     }
                 } else if(direction == DIRECTION_LEFT){
                     // x方向上的速度 如果大约临界值，则revert 为 true; 否则看其他条件
@@ -252,9 +253,9 @@ public class MobileBlock extends View {
                     }
                     moveX = -Math.min(Math.abs(fMoveX), UNIT_MOVE);
 
-                    revert = Math.abs(moveX) < (UNIT_MOVE / 2.0) && Math.abs(moveX) > 5;
-                    if(revert && xVelocity < -100){
-                        revert = false;
+                    forward = Math.abs(moveX) > (UNIT_MOVE / 2.0);
+                    if(forward && xVelocity < -100){
+                        forward = true;
                     }
                 } else if(direction == DIRECTION_RIGHT){
                     // x方向上的速度 如果大约临界值，则revert 为 true; 否则看其他条件
@@ -269,9 +270,9 @@ public class MobileBlock extends View {
                     }
                     moveX = Math.min(fMoveX, UNIT_MOVE);
 
-                    revert = Math.abs(moveX) < (UNIT_MOVE / 2.0) && Math.abs(moveX) > 5;
-                    if(revert && xVelocity > 100){
-                        revert = false;
+                    forward = Math.abs(moveX) > (UNIT_MOVE / 2.0);
+                    if(forward && xVelocity > 100){
+                        forward = true;
                     }
                 }
 
@@ -284,19 +285,19 @@ public class MobileBlock extends View {
             case MotionEvent.ACTION_UP:
                 // 行驶到边界位置：如果超过一半 【前进】，否则【还原】
                 // 如果是点击，则直接【前进】
-                if(revert) {
-                    if (moveFinishedListener != null) {
-                        moveFinishedListener.onMoving(0, 0);
-                    }
-                    Log.i(TAG, "revert 了");
-                }else {
+                if(forward) {
                     move();
                     moveNull(direction);
 
                     if (moveFinishedListener != null) {
-                        moveFinishedListener.onMoveFinished(mCurrOrderId, mMoveOrderId);
+                        moveFinishedListener.onMoveFinished();
                     }
                     Log.i(TAG, "forward 了");
+                }else {
+                    if (moveFinishedListener != null) {
+                        moveFinishedListener.onMoving(0, 0);
+                    }
+                    Log.i(TAG, "revert 了");
                 }
 
 
@@ -325,187 +326,6 @@ public class MobileBlock extends View {
         setRight((int)endRight);
         setBottom((int)endBottom);
     }
-
-
-//    @Override
-//    public boolean onTouchEvent(MotionEvent event) {
-//
-//        switch (event.getAction()) {
-//            case MotionEvent.ACTION_DOWN:
-//                mEventX = event.getX();
-//                mEventY = event.getY();
-//                break;
-//            case MotionEvent.ACTION_MOVE:
-//                // 1.往哪个方向动，取决于，哪个方向为空
-//                // 2.限制在这个方向上，能移动的空间
-//                // 3.如何知道当前哪个方向有空位，移动后，
-//
-//                // 每次move 位移量
-//                float moveY = event.getY() - mEventY;
-//                float moveX = event.getX() - mEventX;
-//
-//                // 位移后的位置
-//                float endTopY = getTop() + moveY;
-//                float endBottomY = getBottom() + moveY;
-//
-//                float endLeftX = getLeft() + moveX;
-//                float endRightX = getRight() + moveX;
-//
-//                switch (direction) {
-//                    case DIRECTION_LEFT:
-//                        // 4-4 向左移动
-//                        moveToLeft(endLeftX, endRightX);
-//                        break;
-//                    case DIRECTION_RIGHT:
-//                        // 4-3 向右移动
-//                        moveToRight(endLeftX, endRightX);
-//                        break;
-//                    case DIRECTION_DOWN:
-//                        // 确定当前范围  4-1:向下移动
-//                        moveToDown(endTopY, endBottomY);
-//                        break;
-//                    case DIRECTION_UP:
-//                        // 确定当前范围  4-2:向上移动
-//                        moveToUp(endTopY, endBottomY);
-//                        break;
-//                    case DIRECTION_FIX:
-//                        break;
-//                }
-//                break;
-//            case MotionEvent.ACTION_UP:
-//                move();
-//                // 1.通过动画移动到最终位置
-//                // 2.提醒JigsawZone 移动完成，重新计算每个Block可移动方向。
-//                // 3.是否需要重新布局，每一次移动，块所在的数组的位置都会变化，
-////                ViewPropertyAnimator
-////                if (direction == DIRECTION_RIGHT) {
-////                    float moveXUp = event.getX() - mEventX;
-////                    float endLeftXUp = getLeft() + moveXUp;
-////                    if (endLeftXUp - locationLeft >= UNIT_MOVE / 2 && endLeftXUp - locationLeft < UNIT_MOVE) {
-////                        System.out.println("前进 - > " + (UNIT_MOVE - endLeftXUp + locationLeft));
-////
-////                        if (mMoveOrderId == mCurrOrderId) {
-////                            mMoveOrderId++;
-////                        }
-////                        animate().translationXBy(UNIT_MOVE - endLeftXUp + locationLeft).setDuration(200).setInterpolator(new AccelerateInterpolator()).setListener(new Animator.AnimatorListener() {
-////                            @Override
-////                            public void onAnimationStart(Animator animation) {
-////
-////                            }
-////
-////                            @Override
-////                            public void onAnimationEnd(Animator animation) {
-//////                                setLeft(locationLeft + UNIT_MOVE);
-//////                                setRight(locationRight + UNIT_MOVE);
-////                                if (mMoveOrderId != mCurrOrderId && moveFinishedListener != null) {
-////                                    moveFinishedListener.onMoveFinished(mCurrOrderId, mMoveOrderId);
-////                                }
-////                            }
-////
-////                            @Override
-////                            public void onAnimationCancel(Animator animation) {
-////
-////                            }
-////
-////                            @Override
-////                            public void onAnimationRepeat(Animator animation) {
-////
-////                            }
-////                        });
-////                        return true;
-////                    } else if (endLeftXUp - locationLeft < UNIT_MOVE / 2 && endLeftXUp - locationLeft > 0) {
-////                        System.out.println("返回 - > " + (locationLeft - endLeftXUp));
-////                        if (mMoveOrderId == mCurrOrderId + 1) {
-////                            mMoveOrderId--;
-////                        }
-////                        System.out.println("locationLeft1 -> "+ locationLeft);
-////                        System.out.println("locationRight1 -> "+ locationRight);
-////                        System.out.println("translationX1 -> "+ getTranslationX());
-////
-////                        animate().translationXBy(locationLeft - endLeftXUp).setDuration(200).setInterpolator(new AccelerateInterpolator()).setListener(new Animator.AnimatorListener() {
-////                            @Override
-////                            public void onAnimationStart(Animator animation) {
-////
-////                            }
-////
-////                            @Override
-////                            public void onAnimationEnd(Animator animation) {
-//////                                setLeft(locationLeft);
-//////                                setRight(locationRight);
-//////                                setTranslationX(0);
-////
-////                                System.out.println("locationLeft -> "+ locationLeft);
-////                                System.out.println("locationRight -> "+ locationRight);
-////                                System.out.println("mMoveOrderId -> "+ mMoveOrderId);
-////                                System.out.println("mCurrOrderId -> "+ mCurrOrderId);
-////                                System.out.println("direction -> "+ direction);
-////                                System.out.println("translationX -> "+ getTranslationX());
-////
-////                                if (mMoveOrderId != mCurrOrderId && moveFinishedListener != null) {
-////                                    moveFinishedListener.onMoveFinished(mCurrOrderId, mMoveOrderId);
-////                                }
-////                            }
-////
-////                            @Override
-////                            public void onAnimationCancel(Animator animation) {
-////
-////                            }
-////
-////                            @Override
-////                            public void onAnimationRepeat(Animator animation) {
-////
-////                            }
-////                        });
-////                        return true;
-////                    }
-////                }
-//
-//                if (moveFinishedListener != null) {
-//                    moveFinishedListener.onMoveFinished(mCurrOrderId, mMoveOrderId);
-//                }
-//                break;
-//        }
-//        return super.onTouchEvent(event);
-//    }
-
-//    /**
-//     * 触发自动移动
-//     */
-//    public void move() {
-//        switch (direction) {
-//            case DIRECTION_LEFT:
-//                // 4-4 向左移动
-//                setLeft(locationLeft - UNIT_MOVE);
-//                setRight(locationRight - UNIT_MOVE);
-//                // 当前位置减小
-//                mCurrOrderId -= 1;
-//                break;
-//            case DIRECTION_RIGHT:
-//                // 4-3 向右移动
-//                setLeft(locationLeft + UNIT_MOVE);
-//                setRight(locationRight + UNIT_MOVE);
-//                // 当前位置增加
-//                mCurrOrderId += 1;
-//                break;
-//            case DIRECTION_DOWN:
-//                // 确定当前范围  4-1:向下移动
-//                setTop(locationTop + UNIT_MOVE);
-//                setBottom(locationBottom + UNIT_MOVE);
-//                // 当前位置增加
-//                mCurrOrderId += JigsawZone.WIDTH_SIZE;
-//                break;
-//            case DIRECTION_UP:
-//                // 确定当前范围  4-2:向上移动
-//                setTop(locationTop - UNIT_MOVE);
-//                setBottom(locationBottom - UNIT_MOVE);
-//                // 当前位置减小
-//                mCurrOrderId -= JigsawZone.WIDTH_SIZE;
-//                break;
-//            case DIRECTION_FIX:
-//                break;
-//        }
-//
-//    }
 
     /**
      * 触发移动到目标位置
@@ -589,12 +409,9 @@ public class MobileBlock extends View {
 
     public interface MoveFinishedListener {
         /**
-         * 更新移动后 【块】的当前位置
-         *
-         * @param currOrderId
-         * @param moveOrderId
+         * 移动完成
          */
-        void onMoveFinished(int currOrderId, int moveOrderId);
+        void onMoveFinished();
 
         /**
          * 移动中
