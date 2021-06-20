@@ -175,7 +175,7 @@ public class MobileBlock extends View {
                 // 记录按下的位置点
                 mDownEventX = event.getRawX();
                 mDownEventY = event.getRawY();
-                Log.d(TAG, "onTouchEvent: ACTION_DOWN -> " + mDownEventX + ", " + mDownEventY);
+                Log.i(TAG, "onTouchEvent: ACTION_DOWN -> " + mDownEventX + ", " + mDownEventY);
                 break;
             case MotionEvent.ACTION_MOVE:
                 // 移动的时候，需要随时修改块预期的位置
@@ -195,8 +195,8 @@ public class MobileBlock extends View {
                     if(fMoveY > 0){
                         fMoveY = 0;
                     }
-                    Log.d(TAG, "y -> " + mMoveEventY + " , fMoveY: " + fMoveY);
-                    Log.d(TAG, "fMoveY: " + fMoveY);
+                    Log.i(TAG, "y -> " + mMoveEventY + " , fMoveY: " + fMoveY);
+                    Log.i(TAG, "fMoveY: " + fMoveY);
 
                     moveY = -Math.min(Math.abs(fMoveY), UNIT_MOVE);
 
@@ -207,8 +207,8 @@ public class MobileBlock extends View {
                     if(fMoveY < 0){
                         fMoveY = 0;
                     }
-                    Log.d(TAG, "y -> " + mMoveEventY + " , fMoveY: " + fMoveY);
-                    Log.d(TAG, "fMoveY: " + fMoveY);
+                    Log.i(TAG, "y -> " + mMoveEventY + " , fMoveY: " + fMoveY);
+                    Log.i(TAG, "fMoveY: " + fMoveY);
 
                     moveY = Math.min(Math.abs(fMoveY), UNIT_MOVE);
 
@@ -216,25 +216,23 @@ public class MobileBlock extends View {
                 } else if(direction == DIRECTION_LEFT){
                     // 左移  范围 -UNIT_MOVE < moveX < 0
                     float fMoveX = mMoveEventX - mDownEventX;
-                    Log.d(TAG, "x -> " + mMoveEventX + " , fMoveX: " + fMoveX);
+                    Log.i(TAG, "x -> " + mMoveEventX + " , fMoveX: " + fMoveX);
                     if(fMoveX > 0){
                         fMoveX = 0;
                     }
                     moveX = -Math.min(Math.abs(fMoveX), UNIT_MOVE);
 
-                    revert = Math.abs(moveX) < (UNIT_MOVE / 2.0) && Math.abs(moveY) > 5;
+                    revert = Math.abs(moveX) < (UNIT_MOVE / 2.0) && Math.abs(moveX) > 5;
                 } else if(direction == DIRECTION_RIGHT){
                     // 右移 范围 UNIT_MOVE > moveX > 0
                     float fMoveX = mMoveEventX - mDownEventX;
-                    Log.d(TAG, "x -> " + mMoveEventX + " , fMoveX: " + fMoveX);
+                    Log.i(TAG, "x -> " + mMoveEventX + " , fMoveX: " + fMoveX);
                     if(fMoveX < 0){
                         fMoveX = 0;
                     }
                     moveX = Math.min(fMoveX, UNIT_MOVE);
 
-                    revert = Math.abs(moveX) < (UNIT_MOVE / 2.0) && Math.abs(moveY) > 5;
-                    Log.d(TAG, "moveX: " +  Math.abs(moveX));
-                    Log.d(TAG, "revert: " +  revert);
+                    revert = Math.abs(moveX) < (UNIT_MOVE / 2.0) && Math.abs(moveX) > 5;
                 }
 
                 // 2. 计算滑块位移后的位置【位移小于等于UNIT_MOVE】  联动其他相关块，其他块随当前块运动，
@@ -250,7 +248,7 @@ public class MobileBlock extends View {
                     if (moveFinishedListener != null) {
                         moveFinishedListener.onMoving(0, 0);
                     }
-                    Log.d(TAG, "revert 了");
+                    Log.i(TAG, "revert 了");
                 }else {
                     move();
                     moveNull(direction);
@@ -258,7 +256,7 @@ public class MobileBlock extends View {
                     if (moveFinishedListener != null) {
                         moveFinishedListener.onMoveFinished(mCurrOrderId, mMoveOrderId);
                     }
-                    Log.d(TAG, "forward 了");
+                    Log.i(TAG, "forward 了");
                 }
 
 
