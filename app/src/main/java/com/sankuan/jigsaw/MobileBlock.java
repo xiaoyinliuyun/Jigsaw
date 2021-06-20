@@ -6,16 +6,22 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 /**
  * @Author yangkunjian.
  * @Date 2019/7/5 20:43.
- * @Desc
+ * @Desc 为什么使用getX() getY() 时不顺滑，使用getRawX() getRawY()时很顺滑，获得的信息差别是什么？RawX RawY 是相对与屏幕的位置，X,Y是什么位置呢？
+ * getRawX()：表示触摸点相对于屏幕的坐标
+ * getX()：表示触摸点相对于本身控件最左边和最上边的距离
  */
 
 public class MobileBlock extends View {
+
+    private static final String TAG = "MobileBlock";
+
     private final static int UNIT_MOVE = JigsawZone.UNIT_SIDE;
     protected final static int DIRECTION_LEFT = 0x10;
     protected final static int DIRECTION_RIGHT = 0x11;
@@ -45,11 +51,22 @@ public class MobileBlock extends View {
 
     private Paint mPaint, paint;
 
-
-    private float mEventX, mEventY;
+    /**
+     * 触摸事件按下时的位置
+     */
+    private float mDownEventX, mDownEventY;
+    /**
+     * 触发事件移动时的实时位置
+     */
+    private float mMoveEventX, mMoveEventY;
 
     /**
-     * 初始化位置
+     * 是否还原
+     */
+    private boolean revert;
+
+    /**
+     * 初始化位置，位置变化后更新
      */
     private int locationLeft,
             locationRight,
@@ -86,6 +103,7 @@ public class MobileBlock extends View {
         this.locationTop = locationTop;
         this.locationRight = locationRight;
         this.locationBottom = locationBottom;
+        Log.d(TAG, "setLocation: 更新"+mInitOrderId+"块位置");
     }
 
     public MobileBlock(Context context, int number, boolean isLackBlock) {
@@ -127,11 +145,11 @@ public class MobileBlock extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (mIsLackBlock) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                canvas.drawRoundRect(0, 0, getWidth(), getHeight(), 5, 5, paint);
-            } else {
-                canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
-            }
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                canvas.drawRoundRect(0, 0, getWidth(), getHeight(), 5, 5, paint);
+//            } else {
+//                canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
+//            }
 //            canvas.drawText(String.valueOf(mInitOrderId), getWidth() / 2.5f, getHeight() / 1.7f, mPaint);
 
             return;
@@ -147,6 +165,129 @@ public class MobileBlock extends View {
     }
 
     // TODO: 6/18/21 移动一个块时，需要联动其他的块
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                // 默认点击不revert
+                revert = false;
+                // 记录按下的位置点
+                mDownEventX = event.getRawX();
+                mDownEventY = event.getRawY();
+                Log.d(TAG, "onTouchEvent: ACTION_DOWN -> " + mDownEventX + ", " + mDownEventY);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                // 移动的时候，需要随时修改块预期的位置
+
+                // 1. 计算手指位移量
+                float moveX = 0;
+                float moveY = 0;
+
+                // 移动实时位置
+                mMoveEventX = event.getRawX();
+                mMoveEventY = event.getRawY();
+
+                // 如果
+                if(direction == DIRECTION_UP) {
+                    // 上移 范围： -UNIT_MOVE < moveY < 0
+                    float fMoveY = mMoveEventY - mDownEventY;
+                    if(fMoveY > 0){
+                        fMoveY = 0;
+                    }
+                    Log.d(TAG, "y -> " + mMoveEventY + " , fMoveY: " + fMoveY);
+                    Log.d(TAG, "fMoveY: " + fMoveY);
+
+                    moveY = -Math.min(Math.abs(fMoveY), UNIT_MOVE);
+
+                    revert = Math.abs(moveY) < (UNIT_MOVE / 2.0) && Math.abs(moveY) > 5;
+                } else if(direction == DIRECTION_DOWN){
+                    // 下移 范围 UNIT_MOVE > moveY > 0
+                    float fMoveY = mMoveEventY - mDownEventY;
+                    if(fMoveY < 0){
+                        fMoveY = 0;
+                    }
+                    Log.d(TAG, "y -> " + mMoveEventY + " , fMoveY: " + fMoveY);
+                    Log.d(TAG, "fMoveY: " + fMoveY);
+
+                    moveY = Math.min(Math.abs(fMoveY), UNIT_MOVE);
+
+                    revert = Math.abs(moveY) < (UNIT_MOVE / 2.0) && Math.abs(moveY) > 5;
+                } else if(direction == DIRECTION_LEFT){
+                    // 左移  范围 -UNIT_MOVE < moveX < 0
+                    float fMoveX = mMoveEventX - mDownEventX;
+                    Log.d(TAG, "x -> " + mMoveEventX + " , fMoveX: " + fMoveX);
+                    if(fMoveX > 0){
+                        fMoveX = 0;
+                    }
+                    moveX = -Math.min(Math.abs(fMoveX), UNIT_MOVE);
+
+                    revert = Math.abs(moveX) < (UNIT_MOVE / 2.0) && Math.abs(moveY) > 5;
+                } else if(direction == DIRECTION_RIGHT){
+                    // 右移 范围 UNIT_MOVE > moveX > 0
+                    float fMoveX = mMoveEventX - mDownEventX;
+                    Log.d(TAG, "x -> " + mMoveEventX + " , fMoveX: " + fMoveX);
+                    if(fMoveX < 0){
+                        fMoveX = 0;
+                    }
+                    moveX = Math.min(fMoveX, UNIT_MOVE);
+
+                    revert = Math.abs(moveX) < (UNIT_MOVE / 2.0) && Math.abs(moveY) > 5;
+                    Log.d(TAG, "moveX: " +  Math.abs(moveX));
+                    Log.d(TAG, "revert: " +  revert);
+                }
+
+                // 2. 计算滑块位移后的位置【位移小于等于UNIT_MOVE】  联动其他相关块，其他块随当前块运动，
+                if (moveFinishedListener != null) {
+                    moveFinishedListener.onMoving(moveX, moveY);
+                }
+
+                break;
+            case MotionEvent.ACTION_UP:
+                // 行驶到边界位置：如果超过一半 【前进】，否则【还原】
+                // 如果是点击，则直接【前进】
+                if(revert) {
+                    if (moveFinishedListener != null) {
+                        moveFinishedListener.onMoving(0, 0);
+                    }
+                    Log.d(TAG, "revert 了");
+                }else {
+                    move();
+                    moveNull(direction);
+
+                    if (moveFinishedListener != null) {
+                        moveFinishedListener.onMoveFinished(mCurrOrderId, mMoveOrderId);
+                    }
+                    Log.d(TAG, "forward 了");
+                }
+
+
+                break;
+            default:
+        }
+        return true;
+    }
+
+    /**
+     * 根据变量，控制位置
+     *
+     * @param moveX 横坐标移动量
+     * @param moveY 纵坐标移动量
+     */
+    public void moveByMove(float moveX, float moveY){
+        float endTop = locationTop + moveY;
+        float endBottom = locationBottom + moveY;
+
+        float endLeft = locationLeft + moveX;
+        float endRight = locationRight + moveX;
+
+//        layout((int)endLeft,(int)endTop,(int)endRight,(int)endBottom);
+        setLeft((int)endLeft);
+        setTop((int)endTop);
+        setRight((int)endRight);
+        setBottom((int)endBottom);
+    }
+
 
 //    @Override
 //    public boolean onTouchEvent(MotionEvent event) {
@@ -329,35 +470,35 @@ public class MobileBlock extends View {
 //    }
 
     /**
-     * 触发自动移动
+     * 触发移动到目标位置
      */
     public void move() {
         switch (direction) {
             case DIRECTION_LEFT:
                 // 4-4 向左移动
-                setLeft(getLeft() - UNIT_MOVE);
-                setRight(getRight() - UNIT_MOVE);
+                setLeft(locationLeft - UNIT_MOVE);
+                setRight(locationRight - UNIT_MOVE);
                 // 当前位置减小
                 mCurrOrderId -= 1;
                 break;
             case DIRECTION_RIGHT:
                 // 4-3 向右移动
-                setLeft(getLeft() + UNIT_MOVE);
-                setRight(getRight() + UNIT_MOVE);
+                setLeft(locationLeft + UNIT_MOVE);
+                setRight(locationRight + UNIT_MOVE);
                 // 当前位置增加
                 mCurrOrderId += 1;
                 break;
             case DIRECTION_DOWN:
                 // 确定当前范围  4-1:向下移动
-                setTop(getTop() + UNIT_MOVE);
-                setBottom(getBottom() + UNIT_MOVE);
+                setTop(locationTop + UNIT_MOVE);
+                setBottom(locationBottom + UNIT_MOVE);
                 // 当前位置增加
                 mCurrOrderId += JigsawZone.WIDTH_SIZE;
                 break;
             case DIRECTION_UP:
                 // 确定当前范围  4-2:向上移动
-                setTop(getTop() - UNIT_MOVE);
-                setBottom(getBottom() - UNIT_MOVE);
+                setTop(locationTop - UNIT_MOVE);
+                setBottom(locationBottom - UNIT_MOVE);
                 // 当前位置减小
                 mCurrOrderId -= JigsawZone.WIDTH_SIZE;
                 break;
@@ -407,99 +548,6 @@ public class MobileBlock extends View {
         }
     }
 
-    private void moveToUp(float endTopY, float endBottomY) {
-        // 限制位移后的最终位置
-        int currTop;
-        int currBottom;
-        if (endTopY - locationTop >= -UNIT_MOVE && endTopY - locationTop <= 0) {
-            currTop = (int) endTopY;
-            currBottom = (int) endBottomY;
-        } else if (endTopY - locationTop < -UNIT_MOVE) {
-            currTop = locationTop - UNIT_MOVE;
-            currBottom = locationBottom - UNIT_MOVE;
-            if (mMoveOrderId == mCurrOrderId) {
-                mMoveOrderId -= mWidthSize;
-            }
-        } else {
-            currTop = locationTop;
-            currBottom = locationBottom;
-            if (mMoveOrderId == mCurrOrderId - mWidthSize) {
-                mMoveOrderId += mWidthSize;
-            }
-        }
-        setTop(currTop);
-        setBottom(currBottom);
-    }
-
-    private void moveToDown(float endTopY, float endBottomY) {
-        int currTop;
-        int currBottom;
-        if (endTopY - locationTop <= UNIT_MOVE && endTopY - locationTop >= 0) {
-            currTop = (int) endTopY;
-            currBottom = (int) endBottomY;
-        } else if (endTopY - locationTop > UNIT_MOVE) {
-            currTop = locationTop + UNIT_MOVE;
-            currBottom = locationBottom + UNIT_MOVE;
-            if (mMoveOrderId == mCurrOrderId) {
-                mMoveOrderId += mWidthSize;
-            }
-        } else {
-            currTop = locationTop;
-            currBottom = locationBottom;
-            if (mMoveOrderId == mCurrOrderId + mWidthSize) {
-                mMoveOrderId -= mWidthSize;
-            }
-        }
-        setTop(currTop);
-        setBottom(currBottom);
-    }
-
-    private void moveToRight(float endLeftX, float endRightX) {
-        int currLeft;
-        int currRight;
-        if (endLeftX - locationLeft <= UNIT_MOVE && endRightX - locationRight >= 0) {
-            currLeft = (int) endLeftX;
-            currRight = (int) endRightX;
-        } else if (endLeftX - locationLeft > UNIT_MOVE) {
-            currLeft = locationLeft + UNIT_MOVE;
-            currRight = locationRight + UNIT_MOVE;
-            if (mMoveOrderId == mCurrOrderId) {
-                mMoveOrderId++;
-            }
-        } else {
-            currLeft = locationLeft;
-            currRight = locationRight;
-            if (mMoveOrderId == mCurrOrderId + 1) {
-                mMoveOrderId--;
-            }
-        }
-        setLeft(currLeft);
-        setRight(currRight);
-    }
-
-    private void moveToLeft(float endLeftX, float endRightX) {
-        int currLeft;
-        int currRight;
-        if (endLeftX - locationLeft >= -UNIT_MOVE && endRightX - locationRight <= 0) {
-            currLeft = (int) endLeftX;
-            currRight = (int) endRightX;
-        } else if (endLeftX - locationLeft < -UNIT_MOVE) {
-            currLeft = locationLeft - UNIT_MOVE;
-            currRight = locationRight - UNIT_MOVE;
-            if (mMoveOrderId == mCurrOrderId) {
-                mMoveOrderId--;
-            }
-        } else {
-            currLeft = locationLeft;
-            currRight = locationRight;
-            if (mMoveOrderId == mCurrOrderId - 1) {
-                mMoveOrderId++;
-            }
-        }
-        setLeft(currLeft);
-        setRight(currRight);
-    }
-
 
     public interface MoveFinishedListener {
         /**
@@ -509,5 +557,12 @@ public class MobileBlock extends View {
          * @param moveOrderId
          */
         void onMoveFinished(int currOrderId, int moveOrderId);
+
+        /**
+         * 移动中
+         * @param moveX
+         * @param moveY
+         */
+        void onMoving(float moveX, float moveY);
     }
 }

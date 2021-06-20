@@ -30,7 +30,7 @@ public class JigsawZone extends ViewGroup {
 
     public static final int WIDTH_SIZE = 12;
     public static final int HEIGHT_SIZE = 7;
-    public static final int UNIT_SIDE = 50;
+    public static final int UNIT_SIDE = 100;
 
     /**
      * 移动块组，其中有一个是【缺口】块
@@ -59,20 +59,16 @@ public class JigsawZone extends ViewGroup {
 
     public JigsawZone(Context context) {
         super(context);
-        init();
+        initSubViews();
     }
 
     public JigsawZone(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
+        initSubViews();
     }
 
     public JigsawZone(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
-    }
-
-    private void init() {
         initSubViews();
     }
 
@@ -113,47 +109,63 @@ public class JigsawZone extends ViewGroup {
             setBlockDirection(b, WIDTH_SIZE * HEIGHT_SIZE);
 
 
-//            b.setMoveFinishedListener(new MobileBlock.MoveFinishedListener() {
-//                @Override
-//                public void onMoveFinished(int currOrderId, int moveOrderId) {
-//                    // 重新确定Block[]位置
-//                    try {
-//                        updateBlockArray();
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//
-////                    // 触发UI刷新
-//                    requestLayout();
-//                }
-//            });
-            b.setOnClickListener(new OnClickListener() {
+            b.setMoveFinishedListener(new MobileBlock.MoveFinishedListener() {
                 @Override
-                public void onClick(View v) {
-                    Log.i(TAG, "onClick: " + b.direction);
+                public void onMoving(float moveX, float moveY) {
+                    movingLinkedBlocks(b, moveX, moveY);
+                }
+
+                @Override
+                public void onMoveFinished(int currOrderId, int moveOrderId) {
                     // 触发联动的移动
                     moveLinkedBlocks(b);
                 }
             });
+//            b.setOnClickListener(new OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    Log.i(TAG, "onClick: " + b.direction);
+//                    // 触发联动的移动
+//                    moveLinkedBlocks(b);
+//                }
+//            });
 
             this.addView(b);
         }
+
         btnReset = new Button(getContext());
         btnReset.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         btnReset.setText("重置");
         btnReset.setTextSize(12);
         btnReset.layout(mLeft * 3 / 2 + (WIDTH_SIZE) * UNIT_SIDE, mTop, mLeft + (WIDTH_SIZE + 3) * UNIT_SIDE, mTop + UNIT_SIDE);
+        btnReset.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: 2021/6/20
+            }
+        });
         btnCompose = new Button(getContext());
         btnCompose.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         btnCompose.setText("自动打乱");
         btnCompose.setTextSize(12);
         btnCompose.layout(mLeft * 3 / 2 + (WIDTH_SIZE) * UNIT_SIDE, mTop * 2, mLeft + (WIDTH_SIZE + 3) * UNIT_SIDE, mTop * 2 + UNIT_SIDE);
+        btnCompose.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: 2021/6/20
+            }
+        });
         btnSelectImage = new Button(getContext());
         btnSelectImage.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         btnSelectImage.setText("选择图片");
         btnSelectImage.setTextSize(12);
         btnSelectImage.layout(mLeft * 3 / 2 + (WIDTH_SIZE) * UNIT_SIDE, mTop * 3, mLeft + (WIDTH_SIZE + 3) * UNIT_SIDE, mTop * 3 + UNIT_SIDE);
-
+        btnSelectImage.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: 2021/6/20
+            }
+        });
 
         this.addView(btnReset);
         this.addView(btnCompose);
@@ -164,6 +176,52 @@ public class JigsawZone extends ViewGroup {
         for (MobileBlock b : mBlocks) {
             // 重新修改方向
             setBlockDirection(b, nullIndex);
+        }
+    }
+
+    private void movingLinkedBlocks(MobileBlock b, float moveX, float moveY) {
+        try {
+            // 【缺口】位置
+            int nullIndex = getNullIndex();
+            // 当前【移动块】的位置
+            int currOrderId = b.getCurrOrderId();
+            // 联动的所有【移动块】指针
+            int tempIndex = currOrderId;
+            // 计算哪些块会一起联动
+            switch (b.direction) {
+                case MobileBlock.DIRECTION_UP:
+                    while (tempIndex > nullIndex) {
+                        mBlocks[tempIndex].moveByMove(moveX, moveY);
+                        Log.d(TAG, "moveUp: " + tempIndex);
+                        tempIndex -= WIDTH_SIZE;
+                    }
+                    break;
+                case MobileBlock.DIRECTION_DOWN:
+                    while (tempIndex < nullIndex) {
+                        mBlocks[tempIndex].moveByMove(moveX, moveY);
+                        Log.d(TAG, "moveDown: " + tempIndex);
+                        tempIndex += WIDTH_SIZE;
+                    }
+                    break;
+                case MobileBlock.DIRECTION_LEFT:
+                    while (tempIndex > nullIndex) {
+                        mBlocks[tempIndex].moveByMove(moveX, moveY);
+                        Log.d(TAG, "moveLeft: " + tempIndex);
+                        tempIndex -= 1;
+                    }
+                    break;
+                case MobileBlock.DIRECTION_RIGHT:
+                    while (tempIndex < nullIndex) {
+                        mBlocks[tempIndex].moveByMove(moveX, moveY);
+                        Log.d(TAG, "moveRight: " + tempIndex);
+                        tempIndex += 1;
+                    }
+                    break;
+                default:
+                    Log.d(TAG, "direction: FIX");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -185,7 +243,7 @@ public class JigsawZone extends ViewGroup {
                     while (tempIndex > nullIndex) {
                         mBlocks[tempIndex].move();
                         mBlocks[nullIndex].moveNull(mBlocks[tempIndex].direction);
-                        Log.i(TAG, "moveUp: " + tempIndex);
+                        Log.d(TAG, "moveUp: " + tempIndex);
                         tempIndex -= WIDTH_SIZE;
                     }
                     break;
@@ -193,7 +251,7 @@ public class JigsawZone extends ViewGroup {
                     while (tempIndex < nullIndex) {
                         mBlocks[tempIndex].move();
                         mBlocks[nullIndex].moveNull(mBlocks[tempIndex].direction);
-                        Log.i(TAG, "moveDown: " + tempIndex);
+                        Log.d(TAG, "moveDown: " + tempIndex);
                         tempIndex += WIDTH_SIZE;
                     }
                     break;
@@ -201,7 +259,7 @@ public class JigsawZone extends ViewGroup {
                     while (tempIndex > nullIndex) {
                         mBlocks[tempIndex].move();
                         mBlocks[nullIndex].moveNull(mBlocks[tempIndex].direction);
-                        Log.i(TAG, "moveLeft: " + tempIndex);
+                        Log.d(TAG, "moveLeft: " + tempIndex);
                         tempIndex -= 1;
                     }
                     break;
@@ -209,12 +267,12 @@ public class JigsawZone extends ViewGroup {
                     while (tempIndex < nullIndex) {
                         mBlocks[tempIndex].move();
                         mBlocks[nullIndex].moveNull(mBlocks[tempIndex].direction);
-                        Log.i(TAG, "moveRight: " + tempIndex);
+                        Log.d(TAG, "moveRight: " + tempIndex);
                         tempIndex += 1;
                     }
                     break;
                 default:
-                    Log.i(TAG, "direction: FIX");
+                    Log.d(TAG, "direction: FIX");
             }
 
             // 重新确定Block[]位置
@@ -322,6 +380,7 @@ public class JigsawZone extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        Log.i(TAG, "JigsawZone: onLayout 重新布局");
         // 请求requestLayout()后，会触发此处根据【移动块】新的位置【布局】
         for (int i = 0; i < getChildCount(); i++) {
             View childAt = getChildAt(i);
@@ -347,7 +406,7 @@ public class JigsawZone extends ViewGroup {
         // 根据 差异，判断当块和空间的相对位置，来确定可以往哪个方向移动
         int difference = currOrderId - nullIndex;
         if (difference == 0) {
-            Log.i(TAG, "当前块 " + nullIndex + "为【缺口】块 ");
+            Log.d(TAG, "当前块 " + nullIndex + "为【缺口】块 ");
             return;
         }
 
@@ -355,45 +414,45 @@ public class JigsawZone extends ViewGroup {
             if (currOrderId > (nullIndex - WIDTH_SIZE - 1)) {
                 // 【缺口】在最后一行的右边
                 block.setDirection(MobileBlock.DIRECTION_RIGHT);
-                Log.i(TAG, "block : " + currOrderId + " -> direction : 右");
+                Log.d(TAG, "block : " + currOrderId + " -> direction : 右");
             } else {
                 // 【缺口】和指定块 不在一条线上
                 block.setDirection(MobileBlock.DIRECTION_FIX);
-                Log.i(TAG, "block : " + currOrderId + " -> direction : 固定");
+                Log.d(TAG, "block : " + currOrderId + " -> direction : 固定");
             }
         } else if (currOrderId == WIDTH_SIZE * HEIGHT_SIZE) {
             if (nullIndex >= WIDTH_SIZE * (HEIGHT_SIZE - 1)) {
                 block.setDirection(MobileBlock.DIRECTION_LEFT);
-                Log.i(TAG, "block : " + currOrderId + " -> direction : 左");
+                Log.d(TAG, "block : " + currOrderId + " -> direction : 左");
             } else {
                 // 【缺口】和指定块 不在一条线上
                 block.setDirection(MobileBlock.DIRECTION_FIX);
-                Log.i(TAG, "block : " + currOrderId + " -> direction : 固定");
+                Log.d(TAG, "block : " + currOrderId + " -> direction : 固定");
             }
         } else if (nullIndex > currOrderId && (currOrderId - nullIndex) % WIDTH_SIZE == 0) {
             // 【缺口】在指定块的正下方
             block.setDirection(MobileBlock.DIRECTION_DOWN);
-            Log.i(TAG, "block : " + currOrderId + " -> direction : 下");
+            Log.d(TAG, "block : " + currOrderId + " -> direction : 下");
 
         } else if (nullIndex < currOrderId && (currOrderId - nullIndex) % WIDTH_SIZE == 0) {
             // 【缺口】在指定块的正上方
             block.setDirection(MobileBlock.DIRECTION_UP);
-            Log.i(TAG, "block : " + currOrderId + " -> direction : 上");
+            Log.d(TAG, "block : " + currOrderId + " -> direction : 上");
 
         } else if (nullIndex < currOrderId && currOrderId / WIDTH_SIZE == nullIndex / WIDTH_SIZE) {
             // 【缺口】在指定块的同一行的右边
             block.setDirection(MobileBlock.DIRECTION_LEFT);
-            Log.i(TAG, "block : " + currOrderId + " -> direction : 左");
+            Log.d(TAG, "block : " + currOrderId + " -> direction : 左");
 
         } else if (nullIndex > currOrderId && currOrderId / WIDTH_SIZE == nullIndex / WIDTH_SIZE) {
             // 【缺口】在指定块的同一行的左边
             block.setDirection(MobileBlock.DIRECTION_RIGHT);
-            Log.i(TAG, "block : " + currOrderId + " -> direction : 右");
+            Log.d(TAG, "block : " + currOrderId + " -> direction : 右");
 
         } else {
             // 【缺口】和指定块 不在一条线上
             block.setDirection(MobileBlock.DIRECTION_FIX);
-            Log.i(TAG, "block : " + currOrderId + " -> direction : 固定");
+            Log.d(TAG, "block : " + currOrderId + " -> direction : 固定");
 
         }
     }
