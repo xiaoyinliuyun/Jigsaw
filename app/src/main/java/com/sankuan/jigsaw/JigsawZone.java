@@ -1,6 +1,8 @@
 package com.sankuan.jigsaw;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -79,6 +81,11 @@ public class JigsawZone extends ViewGroup {
      * 3. 点击在一行上有空的块，会导致整行移动。触发requestLayout()
      */
     private void initSubViews() {
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_road);
+        Log.i(TAG, "bitmap: width -> " + bitmap.getWidth() + ", height -> " + bitmap.getHeight());
+
+        // TODO: 6/21/21 把bitmap切割，并放入小块中
+
         int changeLineTimes = 0;
 
         // 【移动块创建、初始化、添加到当前空间】
@@ -104,7 +111,10 @@ public class JigsawZone extends ViewGroup {
                 b.layout(mLeft + UNIT_SIDE * WIDTH_SIZE, mTop + UNIT_SIDE * (HEIGHT_SIZE - 1), mLeft + UNIT_SIDE * (WIDTH_SIZE + 1), mTop + UNIT_SIDE * HEIGHT_SIZE);
                 b.setLocation(mLeft + UNIT_SIDE * WIDTH_SIZE, mTop + UNIT_SIDE * (HEIGHT_SIZE - 1), mLeft + UNIT_SIDE * (WIDTH_SIZE + 1), mTop + UNIT_SIDE * HEIGHT_SIZE);
             }
-
+            // 设置图片
+            if(b.getLeft() + UNIT_SIDE <= bitmap.getWidth() && b.getTop() + UNIT_SIDE <= bitmap.getHeight()) {
+                b.setBitmap(Bitmap.createBitmap(bitmap, b.getLeft(), b.getTop(), UNIT_SIDE, UNIT_SIDE));
+            }
             // 4. 确定可移动方向
             setBlockDirection(b, WIDTH_SIZE * HEIGHT_SIZE);
 
@@ -155,7 +165,7 @@ public class JigsawZone extends ViewGroup {
         btnSelectImage.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: 2021/6/20
+                // TODO: 2021/6/20 选择图片后，用对应的比例切割图片
             }
         });
 

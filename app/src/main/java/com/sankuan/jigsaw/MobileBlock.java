@@ -1,9 +1,11 @@
 package com.sankuan.jigsaw;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -55,6 +57,8 @@ public class MobileBlock extends View {
     public boolean mIsLackBlock;
 
     private Paint mPaint, paint;
+
+    private Bitmap mBitmap;
 
     /**
      * 触摸事件按下时的位置
@@ -110,6 +114,11 @@ public class MobileBlock extends View {
         Log.d(TAG, "setLocation: 更新" + mInitOrderId + "块位置");
     }
 
+    public void setBitmap(Bitmap bitmap) {
+        this.mBitmap = bitmap;
+        Log.i(TAG, "mBitmap: width -> " + mBitmap.getWidth() + ", height -> " + mBitmap.getHeight());
+    }
+
     public MobileBlock(Context context, int number, boolean isLackBlock) {
         super(context);
         setNumber(number);
@@ -159,13 +168,18 @@ public class MobileBlock extends View {
             return;
         }
 
+        // TODO: 6/21/21 画Bitmap 初始化时或选择图片后，设置的bitmap
+        if(mBitmap != null) {
+            canvas.drawBitmap(mBitmap,2,2,mPaint);
+//            canvas.drawBitmap(mBitmap,new Rect(locationLeft,locationTop,locationRight,locationBottom),new Rect(locationLeft,locationTop,locationRight,locationBottom),mPaint);
+        }
 //        canvas.drawText(String.valueOf(mInitOrderId), getWidth() / 2.5f, getHeight() / 1.7f, mPaint);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            canvas.drawRoundRect(2, 2, getWidth() - 2, getHeight() - 2, 6, 6, mPaint);
-        } else {
-            canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            canvas.drawRoundRect(2, 2, getWidth() - 2, getHeight() - 2, 6, 6, mPaint);
+//        } else {
+//            canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
+//        }
     }
 
     // TODO: 6/18/21 移动一个块时，需要联动其他的块
