@@ -30,7 +30,7 @@ public class JigsawZone extends ViewGroup {
 
     public static final int WIDTH_SIZE = 12;
     public static final int HEIGHT_SIZE = 7;
-    public static final int UNIT_SIDE = 100;
+    public static final int UNIT_SIDE = 50;
 
     /**
      * 移动块组，其中有一个是【缺口】块

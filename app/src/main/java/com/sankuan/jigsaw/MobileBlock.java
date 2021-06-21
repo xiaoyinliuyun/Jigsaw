@@ -17,7 +17,7 @@ import android.view.View;
  * @Desc 为什么使用getX() getY() 时不顺滑，使用getRawX() getRawY()时很顺滑，获得的信息差别是什么？RawX RawY 是相对与屏幕的位置，X,Y是什么位置呢？
  * getRawX()：表示触摸点相对于屏幕的坐标
  * getX()：表示触摸点相对于本身控件最左边和最上边的距离
- *
+ * <p>
  * 如何区分点击事件，和触摸事件？
  */
 
@@ -107,7 +107,7 @@ public class MobileBlock extends View {
         this.locationTop = locationTop;
         this.locationRight = locationRight;
         this.locationBottom = locationBottom;
-        Log.d(TAG, "setLocation: 更新"+mInitOrderId+"块位置");
+        Log.d(TAG, "setLocation: 更新" + mInitOrderId + "块位置");
     }
 
     public MobileBlock(Context context, int number, boolean isLackBlock) {
@@ -172,17 +172,17 @@ public class MobileBlock extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()){
+        switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 // 默认点击不revert
-                forward = true;
+                forward = direction != DIRECTION_FIX;
                 // 记录按下的位置点
                 mDownEventX = event.getRawX();
                 mDownEventY = event.getRawY();
                 Log.i(TAG, "onTouchEvent: ACTION_DOWN -> " + mDownEventX + ", " + mDownEventY);
-                if(velocityTracker == null){
+                if (velocityTracker == null) {
                     velocityTracker = VelocityTracker.obtain();
-                }else{
+                } else {
                     velocityTracker.clear();
                 }
                 velocityTracker.addMovement(event);
@@ -202,14 +202,14 @@ public class MobileBlock extends View {
                 mMoveEventY = event.getRawY();
 
                 // 如果
-                if(direction == DIRECTION_UP) {
+                if (direction == DIRECTION_UP) {
                     // y方向上的速度 如果小于临界值，则revert 为 true; 否则看其他条件
                     float yVelocity = velocityTracker.getYVelocity();
                     Log.i(TAG, "yVelocity: " + yVelocity);
 
                     // 上移 范围： -UNIT_MOVE < moveY < 0
                     float fMoveY = mMoveEventY - mDownEventY;
-                    if(fMoveY > 0){
+                    if (fMoveY > 0) {
                         fMoveY = 0;
                     }
                     Log.i(TAG, "y -> " + mMoveEventY + " , fMoveY: " + fMoveY);
@@ -217,18 +217,18 @@ public class MobileBlock extends View {
 
                     moveY = -Math.min(Math.abs(fMoveY), UNIT_MOVE);
 
-                    forward =  Math.abs(moveY) > (UNIT_MOVE / 2.0);
-                    if(!forward && yVelocity < -100){
+                    forward = Math.abs(moveY) > (UNIT_MOVE / 2.0);
+                    if (!forward && yVelocity < -100) {
                         forward = true;
                     }
-                } else if(direction == DIRECTION_DOWN){
+                } else if (direction == DIRECTION_DOWN) {
                     // y方向上的速度 如果大约临界值，则revert 为 true; 否则看其他条件
                     float yVelocity = velocityTracker.getYVelocity();
                     Log.i(TAG, "yVelocity: " + yVelocity);
 
                     // 下移 范围 UNIT_MOVE > moveY > 0
                     float fMoveY = mMoveEventY - mDownEventY;
-                    if(fMoveY < 0){
+                    if (fMoveY < 0) {
                         fMoveY = 0;
                     }
                     Log.i(TAG, "y -> " + mMoveEventY + " , fMoveY: " + fMoveY);
@@ -237,10 +237,10 @@ public class MobileBlock extends View {
                     moveY = Math.min(Math.abs(fMoveY), UNIT_MOVE);
 
                     forward = Math.abs(moveY) > (UNIT_MOVE / 2.0);
-                    if(!forward && yVelocity > 100){
+                    if (!forward && yVelocity > 100) {
                         forward = true;
                     }
-                } else if(direction == DIRECTION_LEFT){
+                } else if (direction == DIRECTION_LEFT) {
                     // x方向上的速度 如果大约临界值，则revert 为 true; 否则看其他条件
                     float xVelocity = velocityTracker.getXVelocity();
                     Log.i(TAG, "xVelocity: " + xVelocity);
@@ -248,16 +248,16 @@ public class MobileBlock extends View {
                     // 左移  范围 -UNIT_MOVE < moveX < 0
                     float fMoveX = mMoveEventX - mDownEventX;
                     Log.i(TAG, "x -> " + mMoveEventX + " , fMoveX: " + fMoveX);
-                    if(fMoveX > 0){
+                    if (fMoveX > 0) {
                         fMoveX = 0;
                     }
                     moveX = -Math.min(Math.abs(fMoveX), UNIT_MOVE);
 
                     forward = Math.abs(moveX) > (UNIT_MOVE / 2.0);
-                    if(forward && xVelocity < -100){
+                    if (forward && xVelocity < -100) {
                         forward = true;
                     }
-                } else if(direction == DIRECTION_RIGHT){
+                } else if (direction == DIRECTION_RIGHT) {
                     // x方向上的速度 如果大约临界值，则revert 为 true; 否则看其他条件
                     float xVelocity = velocityTracker.getXVelocity();
                     Log.i(TAG, "xVelocity: " + xVelocity);
@@ -265,13 +265,13 @@ public class MobileBlock extends View {
                     // 右移 范围 UNIT_MOVE > moveX > 0
                     float fMoveX = mMoveEventX - mDownEventX;
                     Log.i(TAG, "x -> " + mMoveEventX + " , fMoveX: " + fMoveX);
-                    if(fMoveX < 0){
+                    if (fMoveX < 0) {
                         fMoveX = 0;
                     }
                     moveX = Math.min(fMoveX, UNIT_MOVE);
 
                     forward = Math.abs(moveX) > (UNIT_MOVE / 2.0);
-                    if(forward && xVelocity > 100){
+                    if (forward && xVelocity > 100) {
                         forward = true;
                     }
                 }
@@ -285,7 +285,7 @@ public class MobileBlock extends View {
             case MotionEvent.ACTION_UP:
                 // 行驶到边界位置：如果超过一半 【前进】，否则【还原】
                 // 如果是点击，则直接【前进】
-                if(forward) {
+                if (forward) {
                     move();
                     moveNull(direction);
 
@@ -293,7 +293,7 @@ public class MobileBlock extends View {
                         moveFinishedListener.onMoveFinished();
                     }
                     Log.i(TAG, "forward 了");
-                }else {
+                } else {
                     if (moveFinishedListener != null) {
                         moveFinishedListener.onMoving(0, 0);
                     }
@@ -313,7 +313,7 @@ public class MobileBlock extends View {
      * @param moveX 横坐标移动量
      * @param moveY 纵坐标移动量
      */
-    public void moveByMove(float moveX, float moveY){
+    public void moveByMove(float moveX, float moveY) {
         float endTop = locationTop + moveY;
         float endBottom = locationBottom + moveY;
 
@@ -321,10 +321,10 @@ public class MobileBlock extends View {
         float endRight = locationRight + moveX;
 
 //        layout((int)endLeft,(int)endTop,(int)endRight,(int)endBottom);
-        setLeft((int)endLeft);
-        setTop((int)endTop);
-        setRight((int)endRight);
-        setBottom((int)endBottom);
+        setLeft((int) endLeft);
+        setTop((int) endTop);
+        setRight((int) endRight);
+        setBottom((int) endBottom);
     }
 
     /**
@@ -415,6 +415,7 @@ public class MobileBlock extends View {
 
         /**
          * 移动中
+         *
          * @param moveX
          * @param moveY
          */
