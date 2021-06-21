@@ -81,7 +81,7 @@ public class JigsawZone extends ViewGroup {
      * 3. 点击在一行上有空的块，会导致整行移动。触发requestLayout()
      */
     private void initSubViews() {
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_road);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_car_1);
         Log.i(TAG, "bitmap: width -> " + bitmap.getWidth() + ", height -> " + bitmap.getHeight());
 
         // TODO: 6/21/21 把bitmap切割，并放入小块中
