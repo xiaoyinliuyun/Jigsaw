@@ -32,7 +32,7 @@ public class JigsawZone extends ViewGroup {
 
     public static final int WIDTH_SIZE = 12;
     public static final int HEIGHT_SIZE = 7;
-    public static final int UNIT_SIDE = 50;
+    public static final int UNIT_SIDE = 120;
 
     /**
      * 移动块组，其中有一个是【缺口】块
@@ -150,7 +150,7 @@ public class JigsawZone extends ViewGroup {
         btnCompose.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         btnCompose.setText("自动打乱");
         btnCompose.setTextSize(12);
-        btnCompose.layout(mLeft * 3 / 2 + (WIDTH_SIZE) * UNIT_SIDE, mTop * 2, mLeft + (WIDTH_SIZE + 3) * UNIT_SIDE, mTop * 2 + UNIT_SIDE);
+        btnCompose.layout(mLeft * 3 / 2 + (WIDTH_SIZE) * UNIT_SIDE, mTop * 4, mLeft + (WIDTH_SIZE + 3) * UNIT_SIDE, mTop * 4 + UNIT_SIDE);
         btnCompose.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -161,7 +161,7 @@ public class JigsawZone extends ViewGroup {
         btnSelectImage.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         btnSelectImage.setText("选择图片");
         btnSelectImage.setTextSize(12);
-        btnSelectImage.layout(mLeft * 3 / 2 + (WIDTH_SIZE) * UNIT_SIDE, mTop * 3, mLeft + (WIDTH_SIZE + 3) * UNIT_SIDE, mTop * 3 + UNIT_SIDE);
+        btnSelectImage.layout(mLeft * 3 / 2 + (WIDTH_SIZE) * UNIT_SIDE, mTop * 7, mLeft + (WIDTH_SIZE + 3) * UNIT_SIDE, mTop * 7 + UNIT_SIDE);
         btnSelectImage.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
