@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -473,4 +474,27 @@ public class JigsawZone extends ViewGroup {
         throw new Exception("未知的位置");
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        Log.i("事件分发", TAG+": dispatchTouchEvent: 调用");
+        boolean ss = super.dispatchTouchEvent(ev);
+        Log.i("事件分发", TAG+": dispatchTouchEvent: return " + ss);
+        return ss;
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        Log.i("事件分发", TAG + ": onInterceptTouchEvent: 调用");
+        boolean ss = super.onInterceptTouchEvent(ev);
+        Log.i("事件分发", TAG + ": onInterceptTouchEvent: return " + ss);
+        return ss;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Log.i("事件分发", TAG + ": onTouchEvent: 调用");
+        boolean ss = super.onTouchEvent(event);
+        Log.i("事件分发", TAG + ": onTouchEvent: return " + ss);
+        return ss;
+    }
 }

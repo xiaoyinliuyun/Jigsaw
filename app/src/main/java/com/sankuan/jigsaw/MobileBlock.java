@@ -318,8 +318,20 @@ public class MobileBlock extends View {
                 break;
             default:
         }
+
+
+        Log.i("事件分发:", TAG + ": onTouchEvent: return true");
         return true;
     }
+
+
+//    @Override
+//    public boolean onTouchEvent(MotionEvent event) {
+//        Log.i("事件分发:", TAG + ": onTouchEvent: 调用");
+//        boolean ss = super.onTouchEvent(event);
+//        Log.i("事件分发:", TAG + ": onTouchEvent: return " + ss);
+//        return ss;
+//    }
 
     /**
      * 根据变量，控制位置
@@ -435,4 +447,13 @@ public class MobileBlock extends View {
          */
         void onMoving(float moveX, float moveY);
     }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        Log.i("事件分发", TAG + ": dispatchTouchEvent: 调用");
+        boolean ss = super.dispatchTouchEvent(ev);
+        Log.i("事件分发", TAG + ": dispatchTouchEvent: return " + ss);
+        return ss;
+    }
+
 }
