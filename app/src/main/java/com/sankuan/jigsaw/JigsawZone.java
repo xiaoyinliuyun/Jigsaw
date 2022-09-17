@@ -336,6 +336,10 @@ public class JigsawZone extends ViewGroup {
     }
 
 
+    /**
+     *
+     * @param canvas
+     */
     @Override
     protected void dispatchDraw(Canvas canvas) {
         System.out.println("dispatchDraw");
