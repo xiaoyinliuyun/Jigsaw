@@ -1,5 +1,6 @@
 package com.sankuan.jigsaw;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -8,41 +9,61 @@ import android.graphics.Path;
 import android.util.Log;
 import android.view.View;
 
+@SuppressLint("ViewConstructor")
 public class BackgroundZone extends View {
     private static final String TAG = "BackgroundZone";
 
-    public static final int WIDTH_SIZE = 12;
-    public static final int HEIGHT_SIZE = 7;
-    public static final int UNIT_SIDE = 120;
+    public int widthSize;
+    public int heightSize;
+    public int unitSide;
 
     /**
      * 内边界宽高
      */
     int width, height;
+
+    /**
+     * 内边界宽高
+     */
+    int innerWidth, innerHeight;
     /**
      * 内边界偏移
      */
     int left, top;
 
+    int strokeWidth = 2;
+
     Path path = new Path();
     Paint paint = new Paint();
 
-    public BackgroundZone(Context context, int left, int top, int width, int height) {
+    public BackgroundZone(Context context,
+                          int unitSide,
+                          int widthSize,
+                          int heightSize,
+                          int left,
+                          int top,
+                          int width,
+                          int height) {
         super(context);
         Log.i(TAG, "BackgroundZone: 构造");
-        this.left = left;
-        this.top = top;
         this.width = width;
         this.height = height;
+        this.left = left;
+        this.top = top;
+        this.unitSide = unitSide;
+        this.widthSize = widthSize;
+        this.heightSize = heightSize;
+        this.innerWidth = unitSide * widthSize;
+        this.innerHeight = unitSide * heightSize;
 
         // 边框
-        path.moveTo(left, top);
-        path.lineTo(width + left, top);
-        path.lineTo(width + left, this.height + top - UNIT_SIDE);
-        path.lineTo(width + left + UNIT_SIDE, this.height + top - UNIT_SIDE);
-        path.lineTo(width + left + UNIT_SIDE, this.height + top);
-        path.lineTo(left, this.height + top);
-        path.lineTo(left, top);
+        path.moveTo(left, top); // *
+        path.lineTo(this.innerWidth + strokeWidth + left, top); // *-------
+        path.lineTo(this.innerWidth + strokeWidth + left, this.innerHeight + top - unitSide); // |
+        path.lineTo(this.innerWidth + strokeWidth + left + unitSide, this.innerHeight + top - unitSide); // --
+        path.lineTo(this.innerWidth + strokeWidth + left + unitSide, this.innerHeight + top + strokeWidth); // |
+        path.lineTo(left, this.innerHeight + top + strokeWidth); // -----*
+        path.lineTo(left, top); // |
         path.close();
     }
 
@@ -52,28 +73,49 @@ public class BackgroundZone extends View {
         Log.i(TAG, "onDraw: BackgroundZone");
 
 
-        paint.setColor(Color.GREEN);
-        paint.setStyle(Paint.Style.FILL);
-        canvas.drawRect(0, 0, width + UNIT_SIDE + left * 3, height + top * 2, paint);
+//        paint.setColor(Color.GREEN);
+//        paint.setStyle(Paint.Style.FILL);
+//        paint.setAntiAlias(true);
+//        paint.setStrokeWidth(60);
+//        canvas.drawRect(0, 0, width, height, paint);
 
         // 画可移动空间线
         paint.setColor(Color.WHITE);
         paint.setStyle(Paint.Style.FILL);
         paint.setAntiAlias(true);
-        paint.setStrokeWidth(4);
+        paint.setStrokeWidth(strokeWidth);
         canvas.drawPath(path, paint);
 
         // 画纵横线
-        for (int i = 0; i < HEIGHT_SIZE - 1; i++) {
-            canvas.drawLine(left, top + UNIT_SIDE * (i + 1), left + WIDTH_SIZE * UNIT_SIDE, top + UNIT_SIDE * (i + 1), paint);
+        for (int i = 0; i < heightSize - 1; i++) {
+
+            canvas.drawLine(
+                    left,
+                    top + unitSide * (i + 1),
+                    left + widthSize * unitSide,
+                    top + unitSide * (i + 1),
+                    paint
+            );
         }
 
-        for (int i = 0; i < WIDTH_SIZE - 1; i++) {
-            canvas.drawLine(left + UNIT_SIDE * (i + 1), top, left + +UNIT_SIDE * (i + 1), top + UNIT_SIDE * HEIGHT_SIZE, paint);
+        for (int i = 0; i < widthSize - 1; i++) {
+            canvas.drawLine(
+                    left + unitSide * (i + 1),
+                    top,
+                    left + +unitSide * (i + 1),
+                    top + unitSide * heightSize,
+                    paint
+            );
         }
 
         // 画缺口
-        canvas.drawLine(width + left, height + top - UNIT_SIDE, width + left, height + top, paint);
+        canvas.drawLine(
+                innerWidth + left,
+                innerHeight + top - unitSide,
+                innerWidth + left,
+                innerHeight + top,
+                paint
+        );
 
     }
 }

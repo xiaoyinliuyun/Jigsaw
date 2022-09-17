@@ -1,11 +1,11 @@
 package com.sankuan.jigsaw;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -23,11 +23,12 @@ import android.view.View;
  * 如何区分点击事件，和触摸事件？
  */
 
+@SuppressLint("ViewConstructor")
 public class MobileBlock extends View {
 
     private static final String TAG = "MobileBlock";
 
-    private final static int UNIT_MOVE = JigsawZone.UNIT_SIDE;
+    private int unitSide;
     protected final static int DIRECTION_LEFT = 0x10;
     protected final static int DIRECTION_RIGHT = 0x11;
     protected final static int DIRECTION_DOWN = 0x12;
@@ -119,12 +120,13 @@ public class MobileBlock extends View {
         Log.i(TAG, "mBitmap: width -> " + mBitmap.getWidth() + ", height -> " + mBitmap.getHeight());
     }
 
-    public MobileBlock(Context context, int number, boolean isLackBlock) {
+    public MobileBlock(Context context, int unitSide, int number, boolean isLackBlock) {
         super(context);
         setNumber(number);
+        this.unitSide = unitSide;
         mIsLackBlock = isLackBlock;
         mPaint = new Paint();
-        mPaint.setColor(getContext().getColor(R.color.textColor));
+        mPaint.setColor(getContext().getResources().getColor(R.color.textColor));
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setAntiAlias(true);
         mPaint.setTextSize(12);
@@ -138,14 +140,6 @@ public class MobileBlock extends View {
 
     public void setMoveFinishedListener(MoveFinishedListener moveFinishedListener) {
         this.moveFinishedListener = moveFinishedListener;
-    }
-
-    public MobileBlock(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public MobileBlock(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
     }
 
     private void setNumber(int mNumber) {
@@ -239,9 +233,9 @@ public class MobileBlock extends View {
                     Log.i(TAG, "y -> " + mMoveEventY + " , fMoveY: " + fMoveY);
                     Log.i(TAG, "fMoveY: " + fMoveY);
 
-                    moveY = -Math.min(Math.abs(fMoveY), UNIT_MOVE);
+                    moveY = -Math.min(Math.abs(fMoveY), unitSide);
 
-                    forward = Math.abs(moveY) > (UNIT_MOVE / 2.0);
+                    forward = Math.abs(moveY) > (unitSide / 2.0);
                     if (!forward && yVelocity < -100) {
                         forward = true;
                     }
@@ -258,9 +252,9 @@ public class MobileBlock extends View {
                     Log.i(TAG, "y -> " + mMoveEventY + " , fMoveY: " + fMoveY);
                     Log.i(TAG, "fMoveY: " + fMoveY);
 
-                    moveY = Math.min(Math.abs(fMoveY), UNIT_MOVE);
+                    moveY = Math.min(Math.abs(fMoveY), unitSide);
 
-                    forward = Math.abs(moveY) > (UNIT_MOVE / 2.0);
+                    forward = Math.abs(moveY) > (unitSide / 2.0);
                     if (!forward && yVelocity > 100) {
                         forward = true;
                     }
@@ -275,9 +269,9 @@ public class MobileBlock extends View {
                     if (fMoveX > 0) {
                         fMoveX = 0;
                     }
-                    moveX = -Math.min(Math.abs(fMoveX), UNIT_MOVE);
+                    moveX = -Math.min(Math.abs(fMoveX), unitSide);
 
-                    forward = Math.abs(moveX) > (UNIT_MOVE / 2.0);
+                    forward = Math.abs(moveX) > (unitSide / 2.0);
                     if (forward && xVelocity < -100) {
                         forward = true;
                     }
@@ -292,9 +286,9 @@ public class MobileBlock extends View {
                     if (fMoveX < 0) {
                         fMoveX = 0;
                     }
-                    moveX = Math.min(fMoveX, UNIT_MOVE);
+                    moveX = Math.min(fMoveX, unitSide);
 
-                    forward = Math.abs(moveX) > (UNIT_MOVE / 2.0);
+                    forward = Math.abs(moveX) > (unitSide / 2.0);
                     if (forward && xVelocity > 100) {
                         forward = true;
                     }
@@ -310,8 +304,8 @@ public class MobileBlock extends View {
                 // 行驶到边界位置：如果超过一半 【前进】，否则【还原】
                 // 如果是点击，则直接【前进】
                 if (forward) {
-                    move();
-                    moveNull(direction);
+                    move(10);
+                    moveNull(direction, 10);
 
                     if (moveFinishedListener != null) {
                         moveFinishedListener.onMoveFinished();
@@ -366,35 +360,35 @@ public class MobileBlock extends View {
     /**
      * 触发移动到目标位置
      */
-    public void move() {
+    public void move(int widthSize) {
         switch (direction) {
             case DIRECTION_LEFT:
                 // 4-4 向左移动
-                setLeft(locationLeft - UNIT_MOVE);
-                setRight(locationRight - UNIT_MOVE);
+                setLeft(locationLeft - unitSide);
+                setRight(locationRight - unitSide);
                 // 当前位置减小
                 mCurrOrderId -= 1;
                 break;
             case DIRECTION_RIGHT:
                 // 4-3 向右移动
-                setLeft(locationLeft + UNIT_MOVE);
-                setRight(locationRight + UNIT_MOVE);
+                setLeft(locationLeft + unitSide);
+                setRight(locationRight + unitSide);
                 // 当前位置增加
                 mCurrOrderId += 1;
                 break;
             case DIRECTION_DOWN:
                 // 确定当前范围  4-1:向下移动
-                setTop(locationTop + UNIT_MOVE);
-                setBottom(locationBottom + UNIT_MOVE);
+                setTop(locationTop + unitSide);
+                setBottom(locationBottom + unitSide);
                 // 当前位置增加
-                mCurrOrderId += JigsawZone.WIDTH_SIZE;
+                mCurrOrderId += widthSize;
                 break;
             case DIRECTION_UP:
                 // 确定当前范围  4-2:向上移动
-                setTop(locationTop - UNIT_MOVE);
-                setBottom(locationBottom - UNIT_MOVE);
+                setTop(locationTop - unitSide);
+                setBottom(locationBottom - unitSide);
                 // 当前位置减小
-                mCurrOrderId -= JigsawZone.WIDTH_SIZE;
+                mCurrOrderId -= widthSize;
                 break;
             case DIRECTION_FIX:
                 break;
@@ -407,35 +401,35 @@ public class MobileBlock extends View {
      *
      * @param direction 触发【缺口】移动的块的方向
      */
-    public void moveNull(int direction) {
+    public void moveNull(int direction, int widthSize) {
         switch (direction) {
             case DIRECTION_LEFT:
                 // 4-3 向右移动
-                setLeft(getLeft() + UNIT_MOVE);
-                setRight(getRight() + UNIT_MOVE);
+                setLeft(getLeft() + unitSide);
+                setRight(getRight() + unitSide);
                 // 当前位置增加
                 mCurrOrderId += 1;
                 break;
             case DIRECTION_RIGHT:
                 // 4-4 向左移动
-                setLeft(getLeft() - UNIT_MOVE);
-                setRight(getRight() - UNIT_MOVE);
+                setLeft(getLeft() - unitSide);
+                setRight(getRight() - unitSide);
                 // 当前位置减小
                 mCurrOrderId -= 1;
                 break;
             case DIRECTION_DOWN:
                 // 确定当前范围  4-2:向上移动
-                setTop(getTop() - UNIT_MOVE);
-                setBottom(getBottom() - UNIT_MOVE);
+                setTop(getTop() - unitSide);
+                setBottom(getBottom() - unitSide);
                 // 当前位置减小
-                mCurrOrderId -= JigsawZone.WIDTH_SIZE;
+                mCurrOrderId -= widthSize;
                 break;
             case DIRECTION_UP:
                 // 确定当前范围  4-1:向下移动
-                setTop(getTop() + UNIT_MOVE);
-                setBottom(getBottom() + UNIT_MOVE);
+                setTop(getTop() + unitSide);
+                setBottom(getBottom() + unitSide);
                 // 当前位置增加
-                mCurrOrderId += JigsawZone.WIDTH_SIZE;
+                mCurrOrderId += widthSize;
                 break;
             case DIRECTION_FIX:
                 break;
