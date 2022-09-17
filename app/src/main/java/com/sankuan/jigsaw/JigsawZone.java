@@ -213,6 +213,8 @@ public class JigsawZone extends ViewGroup {
                 final MobileBlock b = new MobileBlock(getContext(), unitSide, i, i == mBlocks.length - 1);
                 // 2. 添加到数组
                 mBlocks[i] = b;
+                // TODO: 2022/9/17 优化点
+                b.setWidthSize(widthSize);
                 // 3. 【移动块】初始化位置
                 if (i % widthSize == 0) {
                     b.layout(paddingLeft, paddingTop + unitSide * changeLineTimes, paddingLeft + unitSide, paddingTop + unitSide * (changeLineTimes + 1));

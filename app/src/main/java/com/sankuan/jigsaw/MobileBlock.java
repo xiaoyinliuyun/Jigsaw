@@ -88,6 +88,12 @@ public class MobileBlock extends View {
      */
     public int direction;
 
+    public int widthSize;
+
+    public void setWidthSize(int widthSize) {
+        this.widthSize = widthSize;
+    }
+
     private MoveFinishedListener moveFinishedListener;
 
 
@@ -304,8 +310,8 @@ public class MobileBlock extends View {
                 // 行驶到边界位置：如果超过一半 【前进】，否则【还原】
                 // 如果是点击，则直接【前进】
                 if (forward) {
-                    move(10);
-                    moveNull(direction, 10);
+                    move(widthSize);
+                    moveNull(direction, widthSize);
 
                     if (moveFinishedListener != null) {
                         moveFinishedListener.onMoveFinished();
