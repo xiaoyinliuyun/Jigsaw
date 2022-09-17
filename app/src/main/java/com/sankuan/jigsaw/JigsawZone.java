@@ -4,9 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -31,9 +28,24 @@ import android.widget.Toast;
 public class JigsawZone extends ViewGroup {
     private static final String TAG = "JigsawZone";
 
+    /**
+     * 块横向数量【应该通过配置获取】
+     */
     public static final int WIDTH_SIZE = 12;
+    /**
+     * 块纵向数量【应该通过配置获取】
+     */
     public static final int HEIGHT_SIZE = 7;
+    /**
+     * 单个块宽度，外部拿到的只能是整体宽高，需要根据计算，确定单元宽高
+     */
     public static final int UNIT_SIDE = 120;
+
+    /**
+     * 块的起始偏移量【应该通过配置获取】
+     */
+    private static final int LEFT_OFFSET = 50;
+    private static final int TOP_OFFSET = 50;
 
     /**
      * 移动块组，其中有一个是【缺口】块
@@ -55,9 +67,6 @@ public class JigsawZone extends ViewGroup {
      */
     private Button btnSelectImage;
 
-
-    private int mLeft = 50;
-    private int mTop = 50;
 
 
     public JigsawZone(Context context) {
@@ -82,10 +91,18 @@ public class JigsawZone extends ViewGroup {
      * 3. 点击在一行上有空的块，会导致整行移动。触发requestLayout()
      */
     private void initSubViews() {
+        // 先有设置或测量得到的宽度
+
+
+
+        // 添加背景view
+        BackgroundZone zone = new BackgroundZone(getContext(), LEFT_OFFSET, TOP_OFFSET, WIDTH_SIZE*UNIT_SIDE, HEIGHT_SIZE * UNIT_SIDE);
+        zone.layout(0, 0, (WIDTH_SIZE + 3) * UNIT_SIDE ,   (HEIGHT_SIZE + 2) * UNIT_SIDE);
+        this.addView(zone);
+
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_car_1);
         Log.i(TAG, "bitmap: width -> " + bitmap.getWidth() + ", height -> " + bitmap.getHeight());
 
-        // TODO: 6/21/21 把bitmap切割，并放入小块中
 
         int changeLineTimes = 0;
 
@@ -97,11 +114,11 @@ public class JigsawZone extends ViewGroup {
             mBlocks[i] = b;
             // 3. 【移动块】初始化位置
             if (i % WIDTH_SIZE == 0) {
-                b.layout(mLeft, mTop + UNIT_SIDE * changeLineTimes, mLeft + UNIT_SIDE, mTop + UNIT_SIDE * (changeLineTimes + 1));
-                b.setLocation(mLeft, mTop + UNIT_SIDE * changeLineTimes, mLeft + UNIT_SIDE, mTop + UNIT_SIDE * (changeLineTimes + 1));
+                b.layout(LEFT_OFFSET, TOP_OFFSET + UNIT_SIDE * changeLineTimes, LEFT_OFFSET + UNIT_SIDE, TOP_OFFSET + UNIT_SIDE * (changeLineTimes + 1));
+                b.setLocation(LEFT_OFFSET, TOP_OFFSET + UNIT_SIDE * changeLineTimes, LEFT_OFFSET + UNIT_SIDE, TOP_OFFSET + UNIT_SIDE * (changeLineTimes + 1));
             } else {
-                b.layout(mLeft + UNIT_SIDE * (i % WIDTH_SIZE), mTop + UNIT_SIDE * changeLineTimes, mLeft + UNIT_SIDE * (i % WIDTH_SIZE + 1), mTop + UNIT_SIDE * (changeLineTimes + 1));
-                b.setLocation(mLeft + UNIT_SIDE * (i % WIDTH_SIZE), mTop + UNIT_SIDE * changeLineTimes, mLeft + UNIT_SIDE * (i % WIDTH_SIZE + 1), mTop + UNIT_SIDE * (changeLineTimes + 1));
+                b.layout(LEFT_OFFSET + UNIT_SIDE * (i % WIDTH_SIZE), TOP_OFFSET + UNIT_SIDE * changeLineTimes, LEFT_OFFSET + UNIT_SIDE * (i % WIDTH_SIZE + 1), TOP_OFFSET + UNIT_SIDE * (changeLineTimes + 1));
+                b.setLocation(LEFT_OFFSET + UNIT_SIDE * (i % WIDTH_SIZE), TOP_OFFSET + UNIT_SIDE * changeLineTimes, LEFT_OFFSET + UNIT_SIDE * (i % WIDTH_SIZE + 1), TOP_OFFSET + UNIT_SIDE * (changeLineTimes + 1));
                 if (i % WIDTH_SIZE == WIDTH_SIZE - 1) {
                     changeLineTimes++;
                 }
@@ -109,8 +126,8 @@ public class JigsawZone extends ViewGroup {
 
             if (b.mIsLackBlock) {
                 Log.i(TAG, "initSubViews: " + b.getInitOrderId() + ", changeLineTimes" + changeLineTimes);
-                b.layout(mLeft + UNIT_SIDE * WIDTH_SIZE, mTop + UNIT_SIDE * (HEIGHT_SIZE - 1), mLeft + UNIT_SIDE * (WIDTH_SIZE + 1), mTop + UNIT_SIDE * HEIGHT_SIZE);
-                b.setLocation(mLeft + UNIT_SIDE * WIDTH_SIZE, mTop + UNIT_SIDE * (HEIGHT_SIZE - 1), mLeft + UNIT_SIDE * (WIDTH_SIZE + 1), mTop + UNIT_SIDE * HEIGHT_SIZE);
+                b.layout(LEFT_OFFSET + UNIT_SIDE * WIDTH_SIZE, TOP_OFFSET + UNIT_SIDE * (HEIGHT_SIZE - 1), LEFT_OFFSET + UNIT_SIDE * (WIDTH_SIZE + 1), TOP_OFFSET + UNIT_SIDE * HEIGHT_SIZE);
+                b.setLocation(LEFT_OFFSET + UNIT_SIDE * WIDTH_SIZE, TOP_OFFSET + UNIT_SIDE * (HEIGHT_SIZE - 1), LEFT_OFFSET + UNIT_SIDE * (WIDTH_SIZE + 1), TOP_OFFSET + UNIT_SIDE * HEIGHT_SIZE);
             }
             // 设置图片
             if(b.getLeft() + UNIT_SIDE <= bitmap.getWidth() && b.getTop() + UNIT_SIDE <= bitmap.getHeight()) {
@@ -140,7 +157,7 @@ public class JigsawZone extends ViewGroup {
         btnReset.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         btnReset.setText("重置");
         btnReset.setTextSize(12);
-        btnReset.layout(mLeft * 3 / 2 + (WIDTH_SIZE) * UNIT_SIDE, mTop, mLeft + (WIDTH_SIZE + 3) * UNIT_SIDE, mTop + UNIT_SIDE);
+        btnReset.layout(LEFT_OFFSET * 3 / 2 + (WIDTH_SIZE) * UNIT_SIDE, TOP_OFFSET, LEFT_OFFSET + (WIDTH_SIZE + 3) * UNIT_SIDE, TOP_OFFSET + UNIT_SIDE);
         btnReset.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -151,7 +168,7 @@ public class JigsawZone extends ViewGroup {
         btnCompose.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         btnCompose.setText("自动打乱");
         btnCompose.setTextSize(12);
-        btnCompose.layout(mLeft * 3 / 2 + (WIDTH_SIZE) * UNIT_SIDE, mTop * 4, mLeft + (WIDTH_SIZE + 3) * UNIT_SIDE, mTop * 4 + UNIT_SIDE);
+        btnCompose.layout(LEFT_OFFSET * 3 / 2 + (WIDTH_SIZE) * UNIT_SIDE, TOP_OFFSET * 4, LEFT_OFFSET + (WIDTH_SIZE + 3) * UNIT_SIDE, TOP_OFFSET * 4 + UNIT_SIDE);
         btnCompose.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -162,7 +179,7 @@ public class JigsawZone extends ViewGroup {
         btnSelectImage.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         btnSelectImage.setText("选择图片");
         btnSelectImage.setTextSize(12);
-        btnSelectImage.layout(mLeft * 3 / 2 + (WIDTH_SIZE) * UNIT_SIDE, mTop * 7, mLeft + (WIDTH_SIZE + 3) * UNIT_SIDE, mTop * 7 + UNIT_SIDE);
+        btnSelectImage.layout(LEFT_OFFSET * 3 / 2 + (WIDTH_SIZE) * UNIT_SIDE, TOP_OFFSET * 7, LEFT_OFFSET + (WIDTH_SIZE + 3) * UNIT_SIDE, TOP_OFFSET * 7 + UNIT_SIDE);
         btnSelectImage.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -281,6 +298,7 @@ public class JigsawZone extends ViewGroup {
             // 重新确定Block[]位置
             updateBlockArray();
 
+            Log.i(TAG, "moveLinkedBlocks: 触发UI刷新");
             // 触发UI刷新
             requestLayout();
         } catch (Exception e) {
@@ -336,55 +354,31 @@ public class JigsawZone extends ViewGroup {
     }
 
 
+
     /**
+     * 1. 绘制区域背景
+     * 2. 绘制可移动范围
+     *
+     * 这个会调用多次，不应该在此绘制背景
      *
      * @param canvas
      */
     @Override
     protected void dispatchDraw(Canvas canvas) {
-        System.out.println("dispatchDraw");
-        int widthLen = UNIT_SIDE * WIDTH_SIZE;
-        int heightLen = UNIT_SIDE * HEIGHT_SIZE;
-
-        Path path = new Path();
-        // 边框
-        path.moveTo(mLeft, mTop);
-        path.lineTo(widthLen + mLeft, mTop);
-        path.lineTo(widthLen + mLeft, heightLen + mTop - UNIT_SIDE);
-        path.lineTo(widthLen + mLeft + UNIT_SIDE, heightLen + mTop - UNIT_SIDE);
-        path.lineTo(widthLen + mLeft + UNIT_SIDE, heightLen + mTop);
-        path.lineTo(mLeft, heightLen + mTop);
-        path.lineTo(mLeft, mTop);
-        path.close();
-
-        Paint paint = new Paint();
-        paint.setColor(Color.GREEN);
-        paint.setStyle(Paint.Style.FILL);
-        canvas.drawRect(0, 0, widthLen + UNIT_SIDE + mLeft * 3, heightLen + mTop * 2, paint);
-
-        // 画可移动空间线
-        paint.setColor(Color.WHITE);
-        paint.setStyle(Paint.Style.FILL);
-        paint.setAntiAlias(true);
-        paint.setStrokeWidth(4);
-        canvas.drawPath(path, paint);
-
-        // 画纵横线
-        for (int i = 0; i < HEIGHT_SIZE - 1; i++) {
-            canvas.drawLine(mLeft, mTop + UNIT_SIDE * (i + 1), mLeft + WIDTH_SIZE * UNIT_SIDE, mTop + UNIT_SIDE * (i + 1), paint);
-        }
-
-        for (int i = 0; i < WIDTH_SIZE - 1; i++) {
-            canvas.drawLine(mLeft + UNIT_SIDE * (i + 1), mTop, mLeft + +UNIT_SIDE * (i + 1), mTop + UNIT_SIDE * HEIGHT_SIZE, paint);
-        }
-
-        // 画缺口
-        canvas.drawLine(widthLen + mLeft, heightLen + mTop - UNIT_SIDE, widthLen + mLeft, heightLen + mTop, paint);
-
+        Log.i(TAG, "dispatchDraw: ");
+        
         super.dispatchDraw(canvas);
     }
 
 
+    /**
+     * 如果触摸事件结束后，布局有变化时，调用requestLayout()，触发重新绘制
+     * @param changed
+     * @param l
+     * @param t
+     * @param r
+     * @param b
+     */
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         Log.i(TAG, "JigsawZone: onLayout 重新布局");

@@ -133,7 +133,7 @@ public class MobileBlock extends View {
         paint.setAntiAlias(true);
         paint.setTextSize(12);
         paint.setColor(Color.WHITE);
-        paint.setStyle(Paint.Style.FILL);
+        paint.setStyle(Paint.Style.STROKE);
     }
 
     public void setMoveFinishedListener(MoveFinishedListener moveFinishedListener) {
@@ -154,16 +154,25 @@ public class MobileBlock extends View {
         this.mMoveOrderId = mNumber;
     }
 
+    /**
+     * 通过触发setTop setLeft setRight setBottom 来修改块位置，触发onDraw回调
+     *
+     * 触发onDraw的方式：
+     *
+     * @param canvas
+     */
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        Log.i(TAG, "onDraw: 绘制：" + mInitOrderId);
         if (mIsLackBlock) {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                canvas.drawRoundRect(0, 0, getWidth(), getHeight(), 5, 5, paint);
-//            } else {
-//                canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
-//            }
-//            canvas.drawText(String.valueOf(mInitOrderId), getWidth() / 2.5f, getHeight() / 1.7f, mPaint);
+            // 缺口块不用绘制内容
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                canvas.drawRoundRect(0, 0, getWidth(), getHeight(), 5, 5, paint);
+            } else {
+                canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
+            }
+            canvas.drawText(String.valueOf(mInitOrderId), getWidth() / 2.5f, getHeight() / 1.7f, mPaint);
 
             return;
         }
@@ -173,8 +182,9 @@ public class MobileBlock extends View {
             canvas.drawBitmap(mBitmap,2,2,mPaint);
 //            canvas.drawBitmap(mBitmap,new Rect(locationLeft,locationTop,locationRight,locationBottom),new Rect(locationLeft,locationTop,locationRight,locationBottom),mPaint);
         }
-//        canvas.drawText(String.valueOf(mInitOrderId), getWidth() / 2.5f, getHeight() / 1.7f, mPaint);
+        canvas.drawText(String.valueOf(mInitOrderId), getWidth() / 2.5f, getHeight() / 1.7f, mPaint);
 
+        // 绘制形状色块
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 //            canvas.drawRoundRect(2, 2, getWidth() - 2, getHeight() - 2, 6, 6, mPaint);
 //        } else {
