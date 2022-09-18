@@ -154,6 +154,12 @@ public class MobileBlock extends View {
         this.mMoveOrderId = mNumber;
     }
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        Log.i(TAG, "onMeasure: 确定测量次数");
+    }
+
     /**
      * 通过触发setTop setLeft setRight setBottom 来修改块位置，触发onDraw回调
      *

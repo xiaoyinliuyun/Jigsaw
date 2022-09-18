@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -67,12 +68,16 @@ public class JigsawZone extends ViewGroup {
 
     Bitmap bitmap;
 
+    Paint paint;
+
     private int paddingLeft;
     private int paddingTop;
     private int paddingRight;
     private int paddingBottom;
 
     ViewGroup controlZone;
+
+    JigsawOperateListener jigsawOperateListener;
 
 
     public JigsawZone(Context context) {
@@ -86,6 +91,10 @@ public class JigsawZone extends ViewGroup {
     public JigsawZone(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initSubViews(context, attrs, defStyleAttr);
+    }
+
+    public void setJigsawOperateListener(JigsawOperateListener jigsawOperateListener) {
+        this.jigsawOperateListener = jigsawOperateListener;
     }
 
     /**
@@ -106,7 +115,10 @@ public class JigsawZone extends ViewGroup {
         a.recycle();
 
         bitmap = BitmapFactory.decodeResource(getResources(), resId);
-
+        paint = new Paint();
+        paint.setStyle(Paint.Style.FILL);
+        paint.setAntiAlias(true);
+        paint.setTextSize(12);
         Log.i(TAG, "bitmap: width -> " + bitmap.getWidth() + ", height -> " + bitmap.getHeight());
 
         // 如何转换 把整个图片按块分割
@@ -166,6 +178,8 @@ public class JigsawZone extends ViewGroup {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        Log.i(TAG, "onMeasure: 确定测量次数");
+
         Log.i(TAG, "onMeasure+: Mode -> " + MeasureSpec.getMode(widthMeasureSpec) + ", Size -> " + MeasureSpec.getSize(widthMeasureSpec));
         Log.i(TAG, "onMeasure+: Mode -> " + MeasureSpec.getMode(heightMeasureSpec) + ", Size -> " + MeasureSpec.getSize(heightMeasureSpec));
 
@@ -186,6 +200,10 @@ public class JigsawZone extends ViewGroup {
             // 可用通过下面的方式 获取控件宽高，但不一定通过getWidth() 或 getHeight() 获取宽高
             width = getMeasuredWidth();
             height = getMeasuredHeight();
+            // 上述代码会导致在任何情况下View的最终宽/高总是比测量宽/高大100px，虽然这样做会导致View显示不正常并且也没有实际意义，但是这证明了测量宽/高的确可以不等于最终宽/高。
+            // 另外一种情况是在某些情况下，View需要多次measure才能确定自己的测量宽/高，在前几次的测量过程中，其得出的测量宽/高有可能和最终宽/高不一致，但最终来说，测量宽/高和最终宽/高相同。
+//            width = getWidth();
+//            height = getHeight();
             Log.i(TAG, "onMeasure: width -> " + width + ", width ->" + height);
 
             // 根据宽高，计算出横向上的数量 和 纵向上的数量，注意偏移
@@ -263,13 +281,19 @@ public class JigsawZone extends ViewGroup {
             Log.i(TAG, "Button controlZone: left -> " + controlZone.getLeft() + ", top -> " + controlZone.getTop() + ", right -> " + controlZone.getRight() + ", bottom -> " + controlZone.getBottom());
 
             controlZone.findViewById(R.id.btn_reset).setOnClickListener(v -> {
-                Toast.makeText(getContext(), "重置", Toast.LENGTH_SHORT).show();
+                if (jigsawOperateListener != null) {
+                    jigsawOperateListener.onReset();
+                }
             });
             controlZone.findViewById(R.id.btn_auto).setOnClickListener(v -> {
-                Toast.makeText(getContext(), "自动打乱", Toast.LENGTH_SHORT).show();
+                if (jigsawOperateListener != null) {
+                    jigsawOperateListener.onCompose();
+                }
             });
             controlZone.findViewById(R.id.btn_select).setOnClickListener(v -> {
-                Toast.makeText(getContext(), "选择图片", Toast.LENGTH_SHORT).show();
+                if (jigsawOperateListener != null) {
+                    jigsawOperateListener.onSelectImage();
+                }
             });
             controlZone.layout(paddingLeft * 3 / 2 + (widthSize + 1) * unitSide, paddingTop * 7, paddingLeft + (widthSize + 4) * unitSide, paddingTop * 8 + unitSide * 3);
 
@@ -410,7 +434,8 @@ public class JigsawZone extends ViewGroup {
 
             Log.i(TAG, "moveLinkedBlocks: 触发UI刷新");
             // 触发UI刷新
-            requestLayout();
+            requestLayout();// 会触发测量，布局，绘制：适用于布局位置发生变化的场景
+//            invalidate();     // 不触发测量和布局，只触发绘制：适用于布局位置没变化的场景，效率更高
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -462,23 +487,31 @@ public class JigsawZone extends ViewGroup {
     protected void dispatchDraw(Canvas canvas) {
         Log.i(TAG, "dispatchDraw: ");
 
+        // 绘制子view
         super.dispatchDraw(canvas);
     }
 
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        Log.i(TAG, "onDraw: ");
+//        // 可以在此绘制自己，或者启动动画控制
+//        canvas.drawBitmap(bitmap, 0,0, paint);
+    }
 
     /**
      * 如果触摸事件结束后，布局有变化时，调用requestLayout()，触发重新绘制
      *
      * @param changed
-     * @param l
-     * @param t
-     * @param r
-     * @param b
+     * @param left
+     * @param top
+     * @param right
+     * @param bottom
      */
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         Log.i(TAG, "JigsawZone: onLayout 重新布局");
-
+        Log.i(TAG, "onLayout: width -> " + getWidth() + ", width ->" + getHeight());
 
         // 请求requestLayout()后，会触发此处根据【移动块】新的位置【布局】
         for (int i = 0; i < getChildCount(); i++) {
@@ -592,5 +625,13 @@ public class JigsawZone extends ViewGroup {
         boolean ss = super.onTouchEvent(event);
         Log.i("事件分发", TAG + ": onTouchEvent: return " + ss);
         return ss;
+    }
+
+    public interface JigsawOperateListener {
+        void onReset();
+
+        void onCompose();
+
+        void onSelectImage();
     }
 }

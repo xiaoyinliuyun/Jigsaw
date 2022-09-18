@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -19,6 +20,25 @@ public class MainActivity extends Activity {
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         window.requestFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
+
+        JigsawZone zone = findViewById(R.id.jigsaw_zone);
+        zone.setJigsawOperateListener(new JigsawZone.JigsawOperateListener() {
+            @Override
+            public void onReset() {
+                RemindWindow remindWindow = new RemindWindow(MainActivity.this);
+                remindWindow.showView();
+            }
+
+            @Override
+            public void onCompose() {
+
+            }
+
+            @Override
+            public void onSelectImage() {
+
+            }
+        });
     }
 
 

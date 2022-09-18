@@ -24,6 +24,29 @@ public class ControlZone extends ViewGroup {
         addView(view);
     }
 
+
+
+    @Override
+    protected void measureChildren(int widthMeasureSpec, int heightMeasureSpec) {
+        // 触发子view的测量
+        super.measureChildren(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    @Override
+    protected void measureChild(View child, int parentWidthMeasureSpec, int parentHeightMeasureSpec) {
+        // 触发单个子view的测量，需要考虑当前ViewGroup【相对于待测量的子view的当前ViewGroup】的MeasureSpec和Padding
+        super.measureChild(child, parentWidthMeasureSpec, parentHeightMeasureSpec);
+    }
+
+    @Override
+    protected void measureChildWithMargins(View child, int parentWidthMeasureSpec, int widthUsed, int parentHeightMeasureSpec, int heightUsed) {
+        // 触发单个子view的测量，需要考虑当前ViewGroup的MeasureSpec和Padding,Margins
+        super.measureChildWithMargins(child, parentWidthMeasureSpec, widthUsed, parentHeightMeasureSpec, heightUsed);
+    }
+
+    // getChildMeasureSpec 根据当前viewgroup的MeasureSpec信息和尺寸信息，为每个子view计算正确的MeasureSpec，通过child.measure传给子view
+    // 所以：每个view的MeasureSpec都是其父view，根据自身MeasureSpec和 当前view的layoutParam确定后，传给当前view.measure的。
+
     private void init() {
         view = LayoutInflater.from(getContext()).inflate(R.layout.layout_control_zone, null, true);
         view.findViewById(R.id.btn_reset).setOnClickListener(v -> {

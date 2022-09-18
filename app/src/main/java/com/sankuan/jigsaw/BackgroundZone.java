@@ -68,6 +68,17 @@ public class BackgroundZone extends View {
     }
 
     @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        Log.i(TAG, "onMeasure: 确定测量次数");
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         Log.i(TAG, "onDraw: BackgroundZone");
@@ -117,5 +128,11 @@ public class BackgroundZone extends View {
                 paint
         );
 
+    }
+
+    @Override
+    protected void dispatchDraw(Canvas canvas) {
+        // view的dispatchDraw默认是空实现，而viewGroup的dispatchDraw是触发绘制子view
+        super.dispatchDraw(canvas);
     }
 }
